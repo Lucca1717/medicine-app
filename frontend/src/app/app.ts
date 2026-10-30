@@ -20,6 +20,7 @@ import { calendarOutline, heartOutline, listOutline, timerOutline } from 'ionico
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CurrentUserService } from './core/services/current-user.service';
 import { UsersApiService } from './core/services/resource-api.service';
+import { UserResponse } from './core/models/medication-manager';
 
 addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
 
@@ -76,7 +77,7 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
           <ion-icon name="timer-outline"></ion-icon>
           <ion-label>Intake</ion-label>
         </ion-tab-button>
-        <ion-tab-button tab="catalog" routerLink="/medications">
+        <ion-tab-button tab="catalog" routerLink="/catalog">
           <ion-icon name="list-outline"></ion-icon>
           <ion-label>Catalog</ion-label>
         </ion-tab-button>
@@ -87,7 +88,7 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
 export class App {
   readonly currentUserService = inject(CurrentUserService);
   readonly currentUserId = this.currentUserService.selectedUserId;
-  readonly users = signal<any[]>([]);
+  readonly users = signal<UserResponse[]>([]);
   protected router = inject(Router);
 
   constructor(private readonly usersApi: UsersApiService) {
