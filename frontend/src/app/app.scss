@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+ion-content {
+  --background: #f4f5f8;
+}
+
+ion-item {
+  --background: transparent;
+}
+
+ion-select {
+  min-width: 180px;
+}
+
+ion-tab-bar {
+  --background: #fff;
+  border-top: 1px solid #dfe3ea;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #667085;
+}
