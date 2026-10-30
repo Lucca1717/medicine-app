@@ -1,0 +1,4 @@
+package com.medicinemanager.entity;
+import jakarta.persistence.*; import java.util.UUID;
+@Entity @Table(name="unit")
+public class Unit { @Id @GeneratedValue(strategy=GenerationType.UUID) private UUID id; @Column(nullable=false,length=100,unique=true) private String name; @Column(nullable=false,length=20,unique=true) private String abbreviation; @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private UnitType type; protected Unit(){} public Unit(String n,String a,UnitType t){name=n;abbreviation=a;type=t;} public UUID getId(){return id;} public String getName(){return name;} public String getAbbreviation(){return abbreviation;} public UnitType getType(){return type;} public void setName(String v){name=v;} public void setAbbreviation(String v){abbreviation=v;} public void setType(UnitType v){type=v;} }
