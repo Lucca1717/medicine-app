@@ -1,0 +1,87 @@
+package com.medicinemanager.service;
+
+import com.medicinemanager.dto.Requests.UserMedicationRequest;
+import com.medicinemanager.entity.*;
+import com.medicinemanager.exception.*;
+import com.medicinemanager.repository.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.util.*;
+
+@Service
+@Transactional
+public class UserMedicationService {
+    private final UserMedicationRepository r;
+    private final AppUserRepository users;
+    private final MedicationRepository meds;
+    private final UnitRepository units;
+
+    public UserMedicationService(UserMedicationRepository r, AppUserRepository u, MedicationRepository m,
+            UnitRepository un) {
+        this.r = r;
+        users = u;
+        meds = m;
+        units = un;
+    }
+
+    public List<UserMedication> findAll() {
+        return r.findAll();
+    }
+
+    public List<UserMedication> findByUserId(UUID userId) {
+        user(userId);
+        return r.findByUserId(userId);
+    }
+
+    public UserMedication find(UUID id) {
+        return r.findById(id).orElseThrow(() -> new NotFoundException("User medication not found"));
+    }
+
+    public UserMedication create(UserMedicationRequest x) {
+        validate(x);
+        return r.save(new UserMedication(user(x.userId()), med(x.medicationId()), x.currentStockValue(),
+                unit(x.stockUnitId()), x.startDate(), x.endDate(), x.active()));
+    }
+
+    public UserMedication update(UUID id, UserMedicationRequest x) {
+        var old = find(id);
+        if (!old.getUser().getId().equals(x.userId()))
+            throw new BusinessRuleException("User ownership cannot be changed");
+        validate(x);
+        old.setMedication(med(x.medicationId()));
+        old.setCurrentStockValue(x.currentStockValue());
+        old.setStockUnit(unit(x.stockUnitId()));
+        old.setStartDate(x.startDate());
+        old.setEndDate(x.endDate());
+        old.setActive(x.active());
+        return r.save(old);
+    }
+
+    public void delete(UUID id) {
+        r.delete(find(id));
+    }
+
+    private void validate(UserMedicationRequest x) {
+        if (x.endDate() != null && x.endDate().isBefore(x.startDate()))
+            throw new BusinessRuleException("endDate cannot be before startDate");
+        if (x.active() && x.endDate() != null && x.endDate().isBefore(LocalDate.now()))
+            throw new BusinessRuleException("active medication cannot have an end date in the past");
+        if (x.currentStockValue().signum() < 0)
+            throw new BusinessRuleException("Stock cannot be negative");
+        if (unit(x.stockUnitId()).getType() != UnitType.MEDICATION)
+            throw new BusinessRuleException("Stock unit must be MEDICATION");
+    }
+
+    private AppUser user(UUID i) {
+        return users.findById(i).orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    private Medication med(UUID i) {
+        return meds.findById(i).orElseThrow(() -> new NotFoundException("Medication not found"));
+    }
+
+    private Unit unit(UUID i) {
+        return units.findById(i).orElseThrow(() -> new NotFoundException("Unit not found"));
+    }
+}

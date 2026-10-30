@@ -1,0 +1,57 @@
+package com.medicinemanager.entity;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.util.UUID;
+
+@Entity
+@Table(name = "medication")
+public class Medication {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+    @Column(nullable = false, length = 255)
+    private String name;
+    @Column(name = "dosage_value", nullable = false, precision = 12, scale = 3)
+    private BigDecimal dosageValue;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "dosage_unit_id", nullable = false)
+    private Unit dosageUnit;
+
+    protected Medication() {
+    }
+
+    public Medication(String n, BigDecimal d, Unit u) {
+        name = n;
+        dosageValue = d;
+        dosageUnit = u;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public BigDecimal getDosageValue() {
+        return dosageValue;
+    }
+
+    public Unit getDosageUnit() {
+        return dosageUnit;
+    }
+
+    public void setName(String v) {
+        name = v;
+    }
+
+    public void setDosageValue(BigDecimal v) {
+        dosageValue = v;
+    }
+
+    public void setDosageUnit(Unit v) {
+        dosageUnit = v;
+    }
+}
