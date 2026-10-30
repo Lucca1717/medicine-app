@@ -1,3 +1,49 @@
 package com.medicinemanager.controller;
-import com.medicinemanager.dto.*;import com.medicinemanager.mapper.EntityMapper;import com.medicinemanager.service.PeriodService;import jakarta.validation.Valid;import org.springframework.http.*;import org.springframework.web.bind.annotation.*;import java.util.*;import java.net.URI;
-@RestController @RequestMapping("/api/periods") public class PeriodController{private final PeriodService s;private final EntityMapper m;public PeriodController(PeriodService s,EntityMapper m){this.s=s;this.m=m;}@PostMapping ResponseEntity<Responses.PeriodResponse> create(@Valid @RequestBody Requests.PeriodRequest x){var created=s.create(x);return ResponseEntity.created(URI.create("/api/periods/"+created.getId())).body(m.period(created));}@GetMapping List<Responses.PeriodResponse> all(@RequestParam(required=false) UUID userId){return (userId==null?s.findAll():s.findByUserId(userId)).stream().map(m::period).toList();}@GetMapping("/{id}") Responses.PeriodResponse one(@PathVariable UUID id){return m.period(s.find(id));}@PutMapping("/{id}") Responses.PeriodResponse update(@PathVariable UUID id,@Valid @RequestBody Requests.PeriodRequest x){return m.period(s.update(id,x));}@DeleteMapping("/{id}") ResponseEntity<Void> delete(@PathVariable UUID id){s.delete(id);return ResponseEntity.noContent().build();}}
+
+import com.medicinemanager.dto.*;
+import com.medicinemanager.mapper.EntityMapper;
+import com.medicinemanager.service.PeriodService;
+import jakarta.validation.Valid;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+import java.net.URI;
+
+@RestController
+@RequestMapping("/api/periods")
+public class PeriodController {
+    private final PeriodService s;
+    private final EntityMapper m;
+
+    public PeriodController(PeriodService s, EntityMapper m) {
+        this.s = s;
+        this.m = m;
+    }
+
+    @PostMapping
+    ResponseEntity<Responses.PeriodResponse> create(@Valid @RequestBody Requests.PeriodRequest x) {
+        var created = s.create(x);
+        return ResponseEntity.created(URI.create("/api/periods/" + created.getId())).body(m.period(created));
+    }
+
+    @GetMapping
+    List<Responses.PeriodResponse> all(@RequestParam(required = false) UUID userId) {
+        return (userId == null ? s.findAll() : s.findByUserId(userId)).stream().map(m::period).toList();
+    }
+
+    @GetMapping("/{id}")
+    Responses.PeriodResponse one(@PathVariable UUID id) {
+        return m.period(s.find(id));
+    }
+
+    @PutMapping("/{id}")
+    Responses.PeriodResponse update(@PathVariable UUID id, @Valid @RequestBody Requests.PeriodRequest x) {
+        return m.period(s.update(id, x));
+    }
+
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> delete(@PathVariable UUID id) {
+        s.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}

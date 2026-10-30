@@ -1,3 +1,55 @@
 package com.medicinemanager.service;
-import com.medicinemanager.dto.Requests.MedicationRequest; import com.medicinemanager.entity.*; import com.medicinemanager.exception.*; import com.medicinemanager.repository.*; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import java.util.*;
-@Service @Transactional public class MedicationService {private final MedicationRepository r;private final UnitRepository units;public MedicationService(MedicationRepository r,UnitRepository u){this.r=r;units=u;}public List<Medication> findAll(){return r.findAll();}public Medication find(UUID id){return r.findById(id).orElseThrow(()->new NotFoundException("Medication not found"));}public Medication create(MedicationRequest x){var u=unit(x.dosageUnitId());if(u.getType()==UnitType.MEDICATION)throw new BusinessRuleException("Dosage unit must be MASS or VOLUME");return r.save(new Medication(x.name().trim(),x.dosageValue(),u));}public Medication update(UUID id,MedicationRequest x){var m=find(id);var u=unit(x.dosageUnitId());if(u.getType()==UnitType.MEDICATION)throw new BusinessRuleException("Dosage unit must be MASS or VOLUME");m.setName(x.name().trim());m.setDosageValue(x.dosageValue());m.setDosageUnit(u);return r.save(m);}public void delete(UUID id){r.delete(find(id));}private Unit unit(UUID id){return units.findById(id).orElseThrow(()->new NotFoundException("Unit not found"));}}
+
+import com.medicinemanager.dto.Requests.MedicationRequest;
+import com.medicinemanager.entity.*;
+import com.medicinemanager.exception.*;
+import com.medicinemanager.repository.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.*;
+
+@Service
+@Transactional
+public class MedicationService {
+    private final MedicationRepository r;
+    private final UnitRepository units;
+
+    public MedicationService(MedicationRepository r, UnitRepository u) {
+        this.r = r;
+        units = u;
+    }
+
+    public List<Medication> findAll() {
+        return r.findAll();
+    }
+
+    public Medication find(UUID id) {
+        return r.findById(id).orElseThrow(() -> new NotFoundException("Medication not found"));
+    }
+
+    public Medication create(MedicationRequest x) {
+        var u = unit(x.dosageUnitId());
+        if (u.getType() == UnitType.MEDICATION)
+            throw new BusinessRuleException("Dosage unit must be MASS or VOLUME");
+        return r.save(new Medication(x.name().trim(), x.dosageValue(), u));
+    }
+
+    public Medication update(UUID id, MedicationRequest x) {
+        var m = find(id);
+        var u = unit(x.dosageUnitId());
+        if (u.getType() == UnitType.MEDICATION)
+            throw new BusinessRuleException("Dosage unit must be MASS or VOLUME");
+        m.setName(x.name().trim());
+        m.setDosageValue(x.dosageValue());
+        m.setDosageUnit(u);
+        return r.save(m);
+    }
+
+    public void delete(UUID id) {
+        r.delete(find(id));
+    }
+
+    private Unit unit(UUID id) {
+        return units.findById(id).orElseThrow(() -> new NotFoundException("Unit not found"));
+    }
+}

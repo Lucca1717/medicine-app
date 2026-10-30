@@ -1,2 +1,5 @@
 package com.medicinemanager.entity;
-public enum IntakeStatus { PENDING, TAKEN, OVERDUE, SKIPPED }
+
+public enum IntakeStatus {
+    PENDING, TAKEN, OVERDUE, SKIPPED
+}

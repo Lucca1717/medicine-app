@@ -1,1 +1,11 @@
-package com.medicinemanager.repository; import com.medicinemanager.entity.Unit; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface UnitRepository extends JpaRepository<Unit,UUID>{boolean existsByNameIgnoreCase(String name);boolean existsByNameIgnoreCaseAndIdNot(String name,UUID id);}
+package com.medicinemanager.repository;
+
+import com.medicinemanager.entity.Unit;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.*;
+
+public interface UnitRepository extends JpaRepository<Unit, UUID> {
+    boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, UUID id);
+}
