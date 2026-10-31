@@ -28,8 +28,8 @@ public class UserMedicationController {
     }
 
     @GetMapping
-    List<Responses.UserMedicationResponse> all(@RequestParam(required = false) UUID userId) {
-        return (userId == null ? s.findAll() : s.findByUserId(userId)).stream().map(m::userMedication).toList();
+    List<Responses.UserMedicationResponse> all(@RequestParam(name = "userId") UUID userId) {
+        return s.findByUserId(userId).stream().map(m::userMedication).toList();
     }
 
     @GetMapping("/{id}")
@@ -37,15 +37,4 @@ public class UserMedicationController {
         return m.userMedication(s.find(id));
     }
 
-    @PutMapping("/{id}")
-    Responses.UserMedicationResponse update(@PathVariable UUID id,
-            @Valid @RequestBody Requests.UserMedicationRequest x) {
-        return m.userMedication(s.update(id, x));
-    }
-
-    @DeleteMapping("/{id}")
-    ResponseEntity<Void> delete(@PathVariable UUID id) {
-        s.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 }
