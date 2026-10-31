@@ -31,6 +31,16 @@ export const routes: Routes = [
       import('./catalog/units/unit-form-page.component').then((m) => m.UnitFormPageComponent),
   },
   {
+    path: 'medications',
+    loadComponent: () =>
+      import('./catalog/medications/medications-page.component').then((m) => m.MedicationsPageComponent),
+  },
+  {
+    path: 'medications/new',
+    loadComponent: () =>
+      import('./catalog/medications/medication-form-page.component').then((m) => m.MedicationFormPageComponent),
+  },
+  {
     path: '**',
     redirectTo: 'my-medications',
   },

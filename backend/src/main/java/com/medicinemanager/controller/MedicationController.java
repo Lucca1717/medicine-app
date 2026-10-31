@@ -36,14 +36,4 @@ public class MedicationController {
         return m.medication(s.find(id));
     }
 
-    @PutMapping("/{id}")
-    Responses.MedicationResponse update(@PathVariable UUID id, @Valid @RequestBody Requests.MedicationRequest x) {
-        return m.medication(s.update(id, x));
-    }
-
-    @DeleteMapping("/{id}")
-    ResponseEntity<Void> delete(@PathVariable UUID id) {
-        s.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 }
