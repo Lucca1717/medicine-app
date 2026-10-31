@@ -27,23 +27,12 @@ public class PeriodController {
     }
 
     @GetMapping
-    List<Responses.PeriodResponse> all(@RequestParam(required = false) UUID userId) {
-        return (userId == null ? s.findAll() : s.findByUserId(userId)).stream().map(m::period).toList();
+    List<Responses.PeriodResponse> all(@RequestParam UUID userId) {
+        return s.findByUserId(userId).stream().map(m::period).toList();
     }
 
     @GetMapping("/{id}")
     Responses.PeriodResponse one(@PathVariable UUID id) {
         return m.period(s.find(id));
-    }
-
-    @PutMapping("/{id}")
-    Responses.PeriodResponse update(@PathVariable UUID id, @Valid @RequestBody Requests.PeriodRequest x) {
-        return m.period(s.update(id, x));
-    }
-
-    @DeleteMapping("/{id}")
-    ResponseEntity<Void> delete(@PathVariable UUID id) {
-        s.delete(id);
-        return ResponseEntity.noContent().build();
     }
 }

@@ -6,13 +6,9 @@ import java.time.LocalTime;
 import java.util.*;
 
 public interface PeriodRepository extends JpaRepository<Period, UUID> {
-    boolean existsByUserIdAndNameIgnoreCase(UUID userId, String name);
-
-    boolean existsByUserIdAndNameIgnoreCaseAndIdNot(UUID userId, String name, UUID id);
+    boolean existsByUserIdAndName(UUID userId, String name);
 
     boolean existsByUserIdAndTime(UUID userId, LocalTime time);
-
-    boolean existsByUserIdAndTimeAndIdNot(UUID userId, LocalTime time, UUID id);
 
     List<Period> findByUserId(UUID userId);
 }
