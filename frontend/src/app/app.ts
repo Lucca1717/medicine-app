@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import {
   IonApp,
   IonContent,
@@ -18,9 +18,10 @@ import {
 import { addIcons } from 'ionicons';
 import { calendarOutline, heartOutline, listOutline, timerOutline } from 'ionicons/icons';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 import { CurrentUserService } from './core/services/current-user.service';
-import { UsersApiService } from './core/services/resource-api.service';
-import { UserResponse } from './core/models/medication-manager';
+import { UsersApiService } from './core/services/users-api.service';
+import { User } from './core/models/medication-manager';
 
 addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
 
@@ -51,7 +52,11 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
           <ion-item slot="end" lines="none">
             <ion-label position="floating">Current user</ion-label>
             <ion-select [value]="currentUserId()" (ionChange)="onUserChange($event.detail.value)">
-              <ion-select-option value="">No user selected</ion-select-option>
+              @if (users().length === 0) {
+                <ion-select-option value="create">Create user</ion-select-option>
+              } @else {
+                <ion-select-option value="">No user selected</ion-select-option>
+              }
               @for (user of users(); track user.id) {
                 <ion-select-option [value]="user.id">{{ user.name }}</ion-select-option>
               }
@@ -88,11 +93,17 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
 export class App {
   readonly currentUserService = inject(CurrentUserService);
   readonly currentUserId = this.currentUserService.selectedUserId;
-  readonly users = signal<UserResponse[]>([]);
+  readonly users = signal<User[]>([]);
   protected router = inject(Router);
 
   constructor(private readonly usersApi: UsersApiService) {
     this.loadUsers();
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.loadUsers());
   }
 
   private loadUsers(): void {
@@ -103,6 +114,10 @@ export class App {
   }
 
   onUserChange(value: string): void {
+    if (value === 'create') {
+      void this.router.navigateByUrl('/users/new');
+      return;
+    }
     this.currentUserService.setSelectedUserId(value || null);
     if (value) {
       this.router.navigateByUrl('/my-medications');

@@ -3,25 +3,20 @@ import { Injectable } from '@angular/core';
 import {
   IntakeRecordRequest,
   IntakeRecordResponse,
+  MedicationPeriodRequest,
+  MedicationPeriodResponse,
   MedicationRequest,
   MedicationResponse,
   PeriodRequest,
   PeriodResponse,
   UnitRequest,
   UnitResponse,
-  UserMedicationRequest,
-  UserMedicationResponse,
   UserRequest,
   UserResponse,
+  UserMedicationRequest,
+  UserMedicationResponse,
 } from '../models/medication-manager';
 import { ApiBaseService } from './api-base.service';
-
-@Injectable({ providedIn: 'root' })
-export class UsersApiService extends ApiBaseService<UserResponse, UserRequest> {
-  constructor(http: HttpClient) {
-    super(http, 'users');
-  }
-}
 
 @Injectable({ providedIn: 'root' })
 export class UnitsApiService extends ApiBaseService<UnitResponse, UnitRequest> {
@@ -48,6 +43,13 @@ export class PeriodsApiService extends ApiBaseService<PeriodResponse, PeriodRequ
 export class UserMedicationsApiService extends ApiBaseService<UserMedicationResponse, UserMedicationRequest> {
   constructor(http: HttpClient) {
     super(http, 'user-medications');
+  }
+}
+
+@Injectable({ providedIn: 'root' })
+export class MedicationPeriodsApiService extends ApiBaseService<MedicationPeriodResponse, MedicationPeriodRequest> {
+  constructor(http: HttpClient) {
+    super(http, 'medication-periods');
   }
 }
 

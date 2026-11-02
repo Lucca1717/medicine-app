@@ -1,12 +1,15 @@
 package com.medicinemanager.service;
 
 import com.medicinemanager.dto.Requests.MedicationRequest;
-import com.medicinemanager.entity.*;
-import com.medicinemanager.exception.*;
-import com.medicinemanager.repository.*;
+import com.medicinemanager.entity.Medication;
+import com.medicinemanager.entity.Unit;
+import com.medicinemanager.exception.NotFoundException;
+import com.medicinemanager.repository.MedicationRepository;
+import com.medicinemanager.repository.UnitRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -29,24 +32,7 @@ public class MedicationService {
 
     public Medication create(MedicationRequest x) {
         var u = unit(x.dosageUnitId());
-        if (u.getType() == UnitType.MEDICATION)
-            throw new BusinessRuleException("Dosage unit must be MASS or VOLUME");
         return r.save(new Medication(x.name().trim(), x.dosageValue(), u));
-    }
-
-    public Medication update(UUID id, MedicationRequest x) {
-        var m = find(id);
-        var u = unit(x.dosageUnitId());
-        if (u.getType() == UnitType.MEDICATION)
-            throw new BusinessRuleException("Dosage unit must be MASS or VOLUME");
-        m.setName(x.name().trim());
-        m.setDosageValue(x.dosageValue());
-        m.setDosageUnit(u);
-        return r.save(m);
-    }
-
-    public void delete(UUID id) {
-        r.delete(find(id));
     }
 
     private Unit unit(UUID id) {

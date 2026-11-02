@@ -1,6 +1,7 @@
 package com.medicinemanager.mapper;
 
 import com.medicinemanager.dto.Responses.*;
+import com.medicinemanager.dto.response.AppUserResponse;
 import com.medicinemanager.entity.*;
 import org.springframework.stereotype.Component;
 
@@ -8,6 +9,10 @@ import org.springframework.stereotype.Component;
 public class EntityMapper {
     public UserResponse user(AppUser x) {
         return new UserResponse(x.getId(), x.getName(), x.getEmail(), x.getCreatedAt());
+    }
+
+    public AppUserResponse appUser(AppUser x) {
+        return new AppUserResponse(x.getId(), x.getName(), x.getEmail(), x.getCreatedAt());
     }
 
     public UnitResponse unit(Unit x) {
