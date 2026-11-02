@@ -19,7 +19,6 @@ import {
 import { ApiBaseService } from './api-base.service';
 
 @Injectable({ providedIn: 'root' })
-@Injectable({ providedIn: 'root' })
 export class UnitsApiService extends ApiBaseService<UnitResponse, UnitRequest> {
   constructor(http: HttpClient) {
     super(http, 'units');
@@ -37,6 +36,13 @@ export class MedicationsApiService extends ApiBaseService<MedicationResponse, Me
 export class PeriodsApiService extends ApiBaseService<PeriodResponse, PeriodRequest> {
   constructor(http: HttpClient) {
     super(http, 'periods');
+  }
+}
+
+@Injectable({ providedIn: 'root' })
+export class UserMedicationsApiService extends ApiBaseService<UserMedicationResponse, UserMedicationRequest> {
+  constructor(http: HttpClient) {
+    super(http, 'user-medications');
   }
 }
 

@@ -15,8 +15,7 @@ export const routes: Routes = [
   },
   {
     path: 'schedule',
-    loadComponent: () =>
-      import('./schedule/periods-page.component').then((m) => m.PeriodsPageComponent),
+    loadComponent: () => import('./schedule/schedule-page.component').then((m) => m.SchedulePageComponent),
   },
   {
     path: 'periods/new',

@@ -39,27 +39,11 @@ public class MedicationPeriodService {
         return r.save(new MedicationPeriod(um, p, x.quantityValue(), unit(x.quantityUnitId())));
     }
 
-    public MedicationPeriod update(UUID id, MedicationPeriodRequest x) {
-        var m = find(id);
-        var um = um(x.userMedicationId());
-        var p = period(x.periodId());
-        validate(um, p, x.quantityUnitId(), x.quantityValue());
-        m.setUserMedication(um);
-        m.setPeriod(p);
-        m.setQuantityValue(x.quantityValue());
-        m.setQuantityUnit(unit(x.quantityUnitId()));
-        return r.save(m);
-    }
-
-    public void delete(UUID id) {
-        r.delete(find(id));
-    }
-
-    private void validate(UserMedication um, Period p, UUID unit, java.math.BigDecimal q) {
+    private void validate(UserMedication um, Period p, UUID unit, java.math.BigDecimal ignoredQuantity) {
         if (!um.getUser().getId().equals(p.getUser().getId()))
             throw new BusinessRuleException("Medication and period must belong to same user");
-        if (q.signum() <= 0)
-            throw new BusinessRuleException("Quantity must be greater than zero");
+        if (r.existsByUserMedicationIdAndPeriodId(um.getId(), p.getId()))
+            throw new ConflictException("Medication is already scheduled in this period");
         if (unit(unit).getType() != UnitType.MEDICATION)
             throw new BusinessRuleException("Quantity unit must be MEDICATION");
     }
