@@ -13,16 +13,12 @@ import {
   UnitResponse,
   UserRequest,
   UserResponse,
+  UserMedicationRequest,
+  UserMedicationResponse,
 } from '../models/medication-manager';
 import { ApiBaseService } from './api-base.service';
 
 @Injectable({ providedIn: 'root' })
-export class UsersApiService extends ApiBaseService<UserResponse, UserRequest> {
-  constructor(http: HttpClient) {
-    super(http, 'users');
-  }
-}
-
 @Injectable({ providedIn: 'root' })
 export class UnitsApiService extends ApiBaseService<UnitResponse, UnitRequest> {
   constructor(http: HttpClient) {

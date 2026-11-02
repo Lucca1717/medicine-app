@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class CurrentUserService {
+  // TEMPORARY until authentication exists.
   private readonly storageKey = 'mm-current-user-id';
   readonly selectedUserId = signal<string | null>(this.readStoredUserId());
 
