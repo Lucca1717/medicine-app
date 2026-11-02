@@ -9,9 +9,6 @@ export const routes: Routes = [
   {
     path: 'my-medications/new',
     loadComponent: () => import('./my-medications/user-medication-form-page.component').then((m) => m.UserMedicationFormPageComponent),
-    loadComponent: () =>
-      import('./placeholder-page.component').then((m) => m.PlaceholderPageComponent),
-    data: { title: 'My Medications' },
   },
   {
     path: 'schedule',
@@ -54,6 +51,8 @@ export const routes: Routes = [
     path: 'medications/new',
     loadComponent: () =>
       import('./catalog/medications/medication-form-page.component').then((m) => m.MedicationFormPageComponent),
+  },
+  {
     path: 'users',
     loadComponent: () => import('./users/users-page.component').then((m) => m.UsersPageComponent),
   },

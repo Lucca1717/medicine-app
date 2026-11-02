@@ -11,8 +11,6 @@ import {
   PeriodResponse,
   UnitRequest,
   UnitResponse,
-  UserRequest,
-  UserResponse,
   UserMedicationRequest,
   UserMedicationResponse,
 } from '../models/medication-manager';
