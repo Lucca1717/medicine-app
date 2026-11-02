@@ -36,14 +36,4 @@ public class IntakeRecordController {
         return m.intake(s.find(id));
     }
 
-    @PutMapping("/{id}")
-    Responses.IntakeRecordResponse update(@PathVariable UUID id, @Valid @RequestBody Requests.IntakeRecordRequest x) {
-        return m.intake(s.update(id, x));
-    }
-
-    @DeleteMapping("/{id}")
-    ResponseEntity<Void> delete(@PathVariable UUID id) {
-        s.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 }

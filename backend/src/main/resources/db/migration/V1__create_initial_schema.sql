@@ -224,12 +224,12 @@ BEGIN
             RAISE EXCEPTION
                 'TAKEN intake records require taken_at, quantity_value, and quantity_unit_id';
         END IF;
-    ELSE
+    ELSIF NEW.status = 'PENDING' THEN
         IF NEW.taken_at IS NOT NULL
            OR NEW.quantity_value IS NOT NULL
            OR NEW.quantity_unit_id IS NOT NULL THEN
             RAISE EXCEPTION
-                'only TAKEN intake records may contain actual intake fields';
+                'PENDING intake records cannot contain actual intake fields';
         END IF;
     END IF;
 
