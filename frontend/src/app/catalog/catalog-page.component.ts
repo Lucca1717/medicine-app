@@ -20,6 +20,10 @@ import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonTitle, IonToolbar
             <p>Manage dosage, stock, and quantity units.</p>
           </ion-label>
         </ion-item>
+        <ion-item button routerLink="/medications">
+          <ion-label>
+            <h2>Medications</h2>
+            <p>Manage generic medication definitions and strengths.</p>
         <ion-item button routerLink="/users">
           <ion-label>
             <h2>Users</h2>
