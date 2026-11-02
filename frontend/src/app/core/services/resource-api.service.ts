@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 import {
   IntakeRecordRequest,
   IntakeRecordResponse,
-  MedicationPeriodRequest,
-  MedicationPeriodResponse,
   MedicationRequest,
   MedicationResponse,
   PeriodRequest,
@@ -50,13 +48,6 @@ export class PeriodsApiService extends ApiBaseService<PeriodResponse, PeriodRequ
 export class UserMedicationsApiService extends ApiBaseService<UserMedicationResponse, UserMedicationRequest> {
   constructor(http: HttpClient) {
     super(http, 'user-medications');
-  }
-}
-
-@Injectable({ providedIn: 'root' })
-export class MedicationPeriodsApiService extends ApiBaseService<MedicationPeriodResponse, MedicationPeriodRequest> {
-  constructor(http: HttpClient) {
-    super(http, 'medication-periods');
   }
 }
 

@@ -37,15 +37,4 @@ public class MedicationPeriodController {
         return m.medicationPeriod(s.find(id));
     }
 
-    @PutMapping("/{id}")
-    Responses.MedicationPeriodResponse update(@PathVariable UUID id,
-            @Valid @RequestBody Requests.MedicationPeriodRequest x) {
-        return m.medicationPeriod(s.update(id, x));
-    }
-
-    @DeleteMapping("/{id}")
-    ResponseEntity<Void> delete(@PathVariable UUID id) {
-        s.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 }

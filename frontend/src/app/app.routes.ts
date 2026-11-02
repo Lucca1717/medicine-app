@@ -9,8 +9,7 @@ export const routes: Routes = [
   },
   {
     path: 'schedule',
-    loadComponent: () => import('./placeholder-page.component').then((m) => m.PlaceholderPageComponent),
-    data: { title: 'Schedule' },
+    loadComponent: () => import('./schedule/schedule-page.component').then((m) => m.SchedulePageComponent),
   },
   {
     path: 'intake-records',
