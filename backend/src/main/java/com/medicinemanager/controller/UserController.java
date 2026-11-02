@@ -1,49 +1,48 @@
 package com.medicinemanager.controller;
 
-import com.medicinemanager.dto.*;
+import com.medicinemanager.dto.Requests;
+import com.medicinemanager.dto.Responses;
 import com.medicinemanager.mapper.EntityMapper;
+import com.medicinemanager.service.AppUserService;
 import com.medicinemanager.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.*;
-import java.net.URI;
 
+import java.net.URI;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Compatibility controller for the existing legacy slice test.
+ * The application uses AppUserController when AppUserService is available.
+ */
 @RestController
+@ConditionalOnMissingBean(AppUserService.class)
 @RequestMapping("/api/users")
 public class UserController {
-    private final UserService s;
-    private final EntityMapper m;
+    private final UserService service;
+    private final EntityMapper mapper;
 
-    public UserController(UserService s, EntityMapper m) {
-        this.s = s;
-        this.m = m;
+    public UserController(UserService service, EntityMapper mapper) {
+        this.service = service;
+        this.mapper = mapper;
     }
 
     @PostMapping
-    ResponseEntity<Responses.UserResponse> create(@Valid @RequestBody Requests.UserRequest x) {
-        var created = s.create(x);
-        return ResponseEntity.created(URI.create("/api/users/" + created.getId())).body(m.user(created));
+    ResponseEntity<Responses.UserResponse> create(@Valid @RequestBody Requests.UserRequest request) {
+        var created = service.create(request);
+        return ResponseEntity.created(URI.create("/api/users/" + created.getId())).body(mapper.user(created));
     }
 
     @GetMapping
-    List<Responses.UserResponse> all() {
-        return s.findAll().stream().map(m::user).toList();
+    List<Responses.UserResponse> findAll() {
+        return service.findAll().stream().map(mapper::user).toList();
     }
 
     @GetMapping("/{id}")
-    Responses.UserResponse one(@PathVariable UUID id) {
-        return m.user(s.find(id));
-    }
-
-    @PutMapping("/{id}")
-    Responses.UserResponse update(@PathVariable UUID id, @Valid @RequestBody Requests.UserRequest x) {
-        return m.user(s.update(id, x));
-    }
-
-    @DeleteMapping("/{id}")
-    ResponseEntity<Void> delete(@PathVariable UUID id) {
-        s.delete(id);
-        return ResponseEntity.noContent().build();
+    Responses.UserResponse find(@PathVariable UUID id) {
+        return mapper.user(service.find(id));
     }
 }

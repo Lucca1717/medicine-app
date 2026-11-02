@@ -19,10 +19,6 @@ public class PeriodService {
         users = u;
     }
 
-    public List<Period> findAll() {
-        return r.findAll();
-    }
-
     public List<Period> findByUserId(UUID userId) {
         user(userId);
         return r.findByUserId(userId);
@@ -33,20 +29,13 @@ public class PeriodService {
     }
 
     public Period create(PeriodRequest x) {
-        return r.save(new Period(user(x.userId()), x.name().trim(), x.time()));
-    }
-
-    public Period update(UUID id, PeriodRequest x) {
-        var p = find(id);
-        if (!p.getUser().getId().equals(x.userId()))
-            throw new BusinessRuleException("Period owner cannot be changed");
-        p.setName(x.name().trim());
-        p.setTime(x.time());
-        return r.save(p);
-    }
-
-    public void delete(UUID id) {
-        r.delete(find(id));
+        var user = user(x.userId());
+        var name = x.name().trim();
+        if (r.existsByUserIdAndName(user.getId(), name))
+            throw new ConflictException("Period name is already registered");
+        if (r.existsByUserIdAndTime(user.getId(), x.time()))
+            throw new ConflictException("Period time is already registered");
+        return r.save(new Period(user, name, x.time()));
     }
 
     private AppUser user(UUID id) {
