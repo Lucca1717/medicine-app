@@ -24,9 +24,11 @@ export const routes: Routes = [
   },
   {
     path: 'intake-records',
-    loadComponent: () =>
-      import('./placeholder-page.component').then((m) => m.PlaceholderPageComponent),
-    data: { title: 'Intake' },
+    loadComponent: () => import('./intake/intake-records-page.component').then((m) => m.IntakeRecordsPageComponent),
+  },
+  {
+    path: 'intake-records/new',
+    loadComponent: () => import('./intake/intake-record-form-page.component').then((m) => m.IntakeRecordFormPageComponent),
   },
   {
     path: 'catalog',

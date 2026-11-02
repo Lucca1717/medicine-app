@@ -30,32 +30,24 @@ public class IntakeRecordService {
     }
 
     public IntakeRecord create(IntakeRecordRequest x) {
+        var medicationPeriod = mp(x.medicationPeriodId());
+        if (r.existsByMedicationPeriodIdAndScheduledAt(x.medicationPeriodId(), x.scheduledAt())) {
+            throw new ConflictException("An intake record already exists for this medication period and scheduled time");
+        }
         validate(x);
-        return r.save(new IntakeRecord(mp(x.medicationPeriodId()), x.scheduledAt(), x.takenAt(), x.quantityValue(),
+        return r.save(new IntakeRecord(medicationPeriod, x.scheduledAt(), x.takenAt(), x.quantityValue(),
                 x.quantityUnitId() == null ? null : unit(x.quantityUnitId()), x.status()));
     }
 
-    public IntakeRecord update(UUID id, IntakeRecordRequest x) {
-        var i = find(id);
-        validate(x);
-        i.setMedicationPeriod(mp(x.medicationPeriodId()));
-        i.setScheduledAt(x.scheduledAt());
-        i.setTakenAt(x.takenAt());
-        i.setQuantityValue(x.quantityValue());
-        i.setQuantityUnit(x.quantityUnitId() == null ? null : unit(x.quantityUnitId()));
-        i.setStatus(x.status());
-        return r.save(i);
-    }
-
-    public void delete(UUID id) {
-        r.delete(find(id));
-    }
-
     private void validate(IntakeRecordRequest x) {
-        boolean taken = x.status() == IntakeStatus.TAKEN;
-        if (taken != (x.takenAt() != null && x.quantityValue() != null && x.quantityUnitId() != null))
-            throw new BusinessRuleException(taken ? "TAKEN intake requires actual intake fields"
-                    : "Only TAKEN intake may contain actual fields");
+        boolean hasActualData = x.takenAt() != null || x.quantityValue() != null || x.quantityUnitId() != null;
+        if (x.status() == IntakeStatus.TAKEN && !(x.takenAt() != null && x.quantityValue() != null
+                && x.quantityUnitId() != null)) {
+            throw new BusinessRuleException("TAKEN intake requires takenAt, quantityValue, and quantityUnitId");
+        }
+        if (x.status() == IntakeStatus.PENDING && hasActualData) {
+            throw new BusinessRuleException("PENDING intake cannot contain takenAt, quantityValue, or quantityUnitId");
+        }
         if (x.quantityValue() != null && x.quantityValue().signum() <= 0)
             throw new BusinessRuleException("Quantity must be greater than zero");
         if (x.quantityUnitId() != null && unit(x.quantityUnitId()).getType() != UnitType.MEDICATION)
