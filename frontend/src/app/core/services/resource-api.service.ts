@@ -11,6 +11,8 @@ import {
   PeriodResponse,
   UnitRequest,
   UnitResponse,
+  UserRequest,
+  UserResponse,
   UserMedicationRequest,
   UserMedicationResponse,
 } from '../models/medication-manager';
@@ -35,13 +37,6 @@ export class MedicationsApiService extends ApiBaseService<MedicationResponse, Me
 export class PeriodsApiService extends ApiBaseService<PeriodResponse, PeriodRequest> {
   constructor(http: HttpClient) {
     super(http, 'periods');
-  }
-}
-
-@Injectable({ providedIn: 'root' })
-export class UserMedicationsApiService extends ApiBaseService<UserMedicationResponse, UserMedicationRequest> {
-  constructor(http: HttpClient) {
-    super(http, 'user-medications');
   }
 }
 

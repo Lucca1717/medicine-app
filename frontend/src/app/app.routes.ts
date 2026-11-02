@@ -4,6 +4,11 @@ export const routes: Routes = [
   { path: '', redirectTo: 'my-medications', pathMatch: 'full' },
   {
     path: 'my-medications',
+    loadComponent: () => import('./my-medications/my-medications-page.component').then((m) => m.MyMedicationsPageComponent),
+  },
+  {
+    path: 'my-medications/new',
+    loadComponent: () => import('./my-medications/user-medication-form-page.component').then((m) => m.UserMedicationFormPageComponent),
     loadComponent: () =>
       import('./placeholder-page.component').then((m) => m.PlaceholderPageComponent),
     data: { title: 'My Medications' },

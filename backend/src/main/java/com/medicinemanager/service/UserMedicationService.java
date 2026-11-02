@@ -40,26 +40,14 @@ public class UserMedicationService {
 
     public UserMedication create(UserMedicationRequest x) {
         validate(x);
-        return r.save(new UserMedication(user(x.userId()), med(x.medicationId()), x.currentStockValue(),
-                unit(x.stockUnitId()), x.startDate(), x.endDate(), x.active()));
-    }
-
-    public UserMedication update(UUID id, UserMedicationRequest x) {
-        var old = find(id);
-        if (!old.getUser().getId().equals(x.userId()))
-            throw new BusinessRuleException("User ownership cannot be changed");
-        validate(x);
-        old.setMedication(med(x.medicationId()));
-        old.setCurrentStockValue(x.currentStockValue());
-        old.setStockUnit(unit(x.stockUnitId()));
-        old.setStartDate(x.startDate());
-        old.setEndDate(x.endDate());
-        old.setActive(x.active());
-        return r.save(old);
-    }
-
-    public void delete(UUID id) {
-        r.delete(find(id));
+        var user = user(x.userId());
+        var medication = med(x.medicationId());
+        var stockUnit = unit(x.stockUnitId());
+        if (r.existsByUserIdAndMedicationId(x.userId(), x.medicationId()))
+            // Assumption: dosage belongs to Medication, so uniqueness is user plus medication.
+            throw new ConflictException("User already has this medication registered");
+        return r.save(new UserMedication(user, medication, x.currentStockValue(), stockUnit, x.startDate(),
+                x.endDate(), x.active()));
     }
 
     private void validate(UserMedicationRequest x) {
