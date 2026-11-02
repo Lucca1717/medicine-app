@@ -24,6 +24,10 @@ import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonTitle, IonToolbar
           <ion-label>
             <h2>Medications</h2>
             <p>Manage generic medication definitions and strengths.</p>
+        <ion-item button routerLink="/users">
+          <ion-label>
+            <h2>Users</h2>
+            <p>Register and select medication manager users.</p>
           </ion-label>
         </ion-item>
       </ion-list>

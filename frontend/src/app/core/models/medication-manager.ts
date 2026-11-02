@@ -1,7 +1,7 @@
 export type UnitType = 'MASS' | 'VOLUME' | 'MEDICATION';
 export type IntakeStatus = 'PENDING' | 'TAKEN' | 'SKIPPED' | 'OVERDUE';
 
-export interface UserResponse {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -10,7 +10,7 @@ export interface UserResponse {
 export interface UserRequest {
   name: string;
   email: string;
-  password?: string;
+  password: string;
 }
 
 export interface UnitResponse {
