@@ -19,20 +19,58 @@ ion-router-outlet {
 }
 
 ion-content {
-  --background: #f4f5f8;
+  --background: var(--mm-surface-subtle);
 }
 
 ion-item {
   --background: transparent;
 }
 
+.user-picker {
+  display: flex;
+  width: min(13rem, 42vw);
+  min-width: 8rem;
+  height: 48px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  margin-inline-end: 0.5rem;
+}
+
+.user-picker-label {
+  margin: 0;
+  color: var(--mm-text-muted);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.user-picker ion-select {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  color: var(--mm-text);
+  font-size: 0.875rem;
+  font-weight: 650;
+  text-align: end;
+}
+
 ion-select {
   min-width: 180px;
 }
 
+@media (max-width: 30rem) {
+  .user-picker {
+    width: 8.5rem;
+    min-width: 8.5rem;
+  }
+}
+
 ion-tab-bar {
-  --background: #fff;
-  border-top: 1px solid #dfe3ea;
+  --background: var(--mm-surface);
+  border-top: 1px solid var(--mm-border);
 }
 
 .empty-state {

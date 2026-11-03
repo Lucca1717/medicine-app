@@ -34,6 +34,18 @@ export class ResourceActionsService {
       .then((toast) => toast.present());
   }
 
+  undoable(message: string, undo: () => void): void {
+    void this.toasts
+      .create({
+        message,
+        duration: 4000,
+        position: 'top',
+        color: 'success',
+        buttons: [{ text: 'Undo', role: 'cancel', handler: undo }],
+      })
+      .then((toast) => toast.present());
+  }
+
   failure(error: unknown): void {
     void this.errors.show(error);
   }

@@ -1,10 +1,14 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'my-medications', pathMatch: 'full' },
+  { path: '', redirectTo: 'today', pathMatch: 'full' },
+  {
+    path: 'today',
+    loadComponent: () => import('./my-medications/my-medications-page.component').then((m) => m.MyMedicationsPageComponent),
+  },
   {
     path: 'my-medications',
-    loadComponent: () => import('./my-medications/my-medications-page.component').then((m) => m.MyMedicationsPageComponent),
+    loadComponent: () => import('./my-medications/user-medications-page.component').then((m) => m.UserMedicationsPageComponent),
   },
   {
     path: 'my-medications/new',

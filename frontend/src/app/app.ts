@@ -4,7 +4,6 @@ import {
   IonApp,
   IonHeader,
   IonIcon,
-  IonItem,
   IonLabel,
   IonRouterOutlet,
   IonSelect,
@@ -15,14 +14,14 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { calendarOutline, heartOutline, listOutline, timerOutline } from 'ionicons/icons';
+import { calendarOutline, heartOutline, homeOutline, listOutline, timerOutline } from 'ionicons/icons';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { CurrentUserService } from './core/services/current-user.service';
 import { UsersApiService } from './core/services/users-api.service';
 import { User } from './core/models/medication-manager';
 
-addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
+addIcons({ calendarOutline, heartOutline, homeOutline, listOutline, timerOutline });
 
 @Component({
   selector: 'app-root',
@@ -35,7 +34,6 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
     IonTitle,
     IonSelect,
     IonSelectOption,
-    IonItem,
     IonLabel,
     IonTabBar,
     IonTabButton,
@@ -48,9 +46,13 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
       <ion-header>
         <ion-toolbar>
           <ion-title>Medication Manager</ion-title>
-          <ion-item slot="end" lines="none">
-            <ion-label position="floating">Current user</ion-label>
-            <ion-select [value]="currentUserId()" (ionChange)="onUserChange($event.detail.value)">
+          <div class="user-picker" slot="end">
+            <span class="user-picker-label">Current user</span>
+            <ion-select
+              aria-label="Select user"
+              [value]="currentUserId()"
+              (ionChange)="onUserChange($event.detail.value)"
+            >
               @if (users().length === 0) {
                 <ion-select-option value="create">Create user</ion-select-option>
               } @else {
@@ -60,16 +62,20 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
                 <ion-select-option [value]="user.id">{{ user.name }}</ion-select-option>
               }
             </ion-select>
-          </ion-item>
+          </div>
         </ion-toolbar>
       </ion-header>
 
       <ion-router-outlet></ion-router-outlet>
 
       <ion-tab-bar slot="bottom">
+        <ion-tab-button tab="today" routerLink="/today">
+          <ion-icon name="home-outline"></ion-icon>
+          <ion-label>Today</ion-label>
+        </ion-tab-button>
         <ion-tab-button tab="my-medications" routerLink="/my-medications">
           <ion-icon name="heart-outline"></ion-icon>
-          <ion-label>My Medications</ion-label>
+          <ion-label>My Meds</ion-label>
         </ion-tab-button>
         <ion-tab-button tab="schedule" routerLink="/schedule">
           <ion-icon name="calendar-outline"></ion-icon>
