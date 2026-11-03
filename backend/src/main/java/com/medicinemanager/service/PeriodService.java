@@ -39,6 +39,8 @@ public class PeriodService {
     }
 
     private AppUser user(UUID id) {
+        if (id == null)
+            throw new BusinessRuleException("User ID is required");
         return users.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
     }
 }
