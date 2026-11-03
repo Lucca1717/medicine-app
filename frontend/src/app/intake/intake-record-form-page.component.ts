@@ -102,8 +102,8 @@ export class IntakeRecordFormPageComponent {
     const value = this.form.getRawValue();
     this.api.create({
       medicationPeriodId: value.medicationPeriodId as string,
-      scheduledAt: value.scheduledAt,
-      takenAt: value.status === 'PENDING' ? null : value.takenAt,
+      scheduledAt: new Date(value.scheduledAt).toISOString(),
+      takenAt: value.status === 'PENDING' || !value.takenAt ? null : new Date(value.takenAt).toISOString(),
       quantityValue: value.status === 'PENDING' ? null : value.quantityValue,
       quantityUnitId: value.status === 'PENDING' ? null : value.quantityUnitId,
       status: value.status,
