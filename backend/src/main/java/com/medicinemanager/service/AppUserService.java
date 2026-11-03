@@ -4,6 +4,7 @@ import com.medicinemanager.dto.request.AppUserRequest;
 import com.medicinemanager.entity.AppUser;
 import com.medicinemanager.exception.ConflictException;
 import com.medicinemanager.exception.NotFoundException;
+import com.medicinemanager.exception.BusinessRuleException;
 import com.medicinemanager.repository.AppUserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,9 @@ public class AppUserService {
     }
 
     public AppUser create(AppUserRequest request) {
+        if (request.password() == null || request.password().isBlank()) {
+            throw new BusinessRuleException("Password is required");
+        }
         String email = request.email().trim().toLowerCase();
         if (repository.existsByEmail(email)) {
             throw new ConflictException("Email is already registered");
@@ -42,5 +46,23 @@ public class AppUserService {
                 request.name().trim(),
                 email,
                 passwordEncoder.encode(request.password())));
+    }
+
+    public AppUser update(UUID id, AppUserRequest request) {
+        var user = find(id);
+        String email = request.email().trim().toLowerCase();
+        if (repository.existsByEmailIgnoreCaseAndIdNot(email, id)) {
+            throw new ConflictException("Email is already registered");
+        }
+        user.setName(request.name().trim());
+        user.setEmail(email);
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setPasswordHash(passwordEncoder.encode(request.password()));
+        }
+        return repository.save(user);
+    }
+
+    public void delete(UUID id) {
+        repository.delete(find(id));
     }
 }

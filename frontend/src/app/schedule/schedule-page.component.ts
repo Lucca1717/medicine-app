@@ -1,9 +1,11 @@
+import { Router, RouterLink } from '@angular/router';
 import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import {
   IonButton,
+  IonFab, IonFabButton, IonIcon, IonItemOption, IonItemOptions, IonItemSliding,
   IonContent,
   IonInput,
   IonItem,
@@ -31,6 +33,11 @@ import {
 } from '../core/services/resource-api.service';
 import { CurrentUserService } from '../core/services/current-user.service';
 import { ErrorService } from '../core/services/error.service';
+import { ResourceActionsService } from '../core/services/resource-actions.service';
+import { addIcons } from 'ionicons';
+import { addOutline } from 'ionicons/icons';
+
+addIcons({ addOutline });
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export function filterCurrentUserPeriods(periods: PeriodResponse[], userId: string | null): PeriodResponse[] {
@@ -49,6 +56,7 @@ export function filterCurrentUserMedications(
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     IonContent,
     IonInput,
     IonToolbar,
@@ -60,6 +68,7 @@ export function filterCurrentUserMedications(
     IonSelect,
     IonSelectOption,
     IonButton,
+    IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption,
     RouterLink,
   ],
   template: `
@@ -103,21 +112,38 @@ export function filterCurrentUserMedications(
             </ion-select>
           </ion-item>
           <ion-note>Quantity is the amount taken per intake.</ion-note>
-          <ion-button expand="block" type="submit" [disabled]="form.invalid">Schedule medication</ion-button>
+          <ion-button expand="block" type="submit" [disabled]="form.invalid">
+            {{ editingMedicationPeriodId() ? 'Save schedule' : 'Schedule medication' }}
+          </ion-button>
+          @if (editingMedicationPeriodId()) {
+            <ion-button expand="block" fill="outline" type="button" (click)="cancelMedicationPeriodEdit()">Cancel</ion-button>
+          }
         </form>
 
         @for (period of currentUserPeriods(); track period.id) {
           <ion-list>
+            <ion-item-sliding #periodSliding>
             <ion-item lines="full">
               <ion-label><h2>{{ period.name }}</h2><p>{{ period.time }}</p></ion-label>
             </ion-item>
+            <ion-item-options side="end">
+              <ion-item-option (click)="editPeriod(period.id); periodSliding.close()">Edit</ion-item-option>
+              <ion-item-option color="danger" (click)="removePeriod(period.id, period.name); periodSliding.close()">Delete</ion-item-option>
+            </ion-item-options>
+            </ion-item-sliding>
             @for (scheduled of scheduledFor(period.id); track scheduled.id) {
+              <ion-item-sliding #scheduledSliding>
               <ion-item>
                 <ion-label>
                   {{ medicationNameForScheduled(scheduled) }}
                   · {{ scheduled.quantityValue }} {{ unitAbbreviation(scheduled.quantityUnitId) }}
                 </ion-label>
               </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option (click)="editMedicationPeriod(scheduled); scheduledSliding.close()">Edit</ion-item-option>
+                <ion-item-option color="danger" (click)="removeMedicationPeriod(scheduled.id, medicationNameForScheduled(scheduled)); scheduledSliding.close()">Delete</ion-item-option>
+              </ion-item-options>
+              </ion-item-sliding>
             } @empty {
               <ion-item><ion-label>No medications scheduled.</ion-label></ion-item>
             }
@@ -125,6 +151,9 @@ export function filterCurrentUserMedications(
         } @empty {
           <ion-note>No periods registered for this user.</ion-note>
         }
+        <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+          <ion-fab-button routerLink="/periods/new" aria-label="Add period"><ion-icon name="add-outline"></ion-icon></ion-fab-button>
+        </ion-fab>
       }
     </ion-content>
   `,
@@ -132,6 +161,8 @@ export function filterCurrentUserMedications(
 export class SchedulePageComponent {
   private readonly currentUser = inject(CurrentUserService);
   private readonly errorService = inject(ErrorService);
+  private readonly router = inject(Router);
+  private readonly actions = inject(ResourceActionsService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly medicationPeriodsApi = inject(MedicationPeriodsApiService);
   private readonly periodsApi = inject(PeriodsApiService);
@@ -146,6 +177,7 @@ export class SchedulePageComponent {
   readonly medications = signal<MedicationResponse[]>([]);
   readonly units = signal<UnitResponse[]>([]);
   readonly medicationPeriods = signal<MedicationPeriodResponse[]>([]);
+  readonly editingMedicationPeriodId = signal<string | null>(null);
   readonly currentUserPeriods = computed(() => filterCurrentUserPeriods(this.periods(), this.currentUserId()));
   readonly currentUserMedications = computed(() =>
     filterCurrentUserMedications(this.userMedications(), this.currentUserId()),
@@ -217,11 +249,63 @@ export class SchedulePageComponent {
       this.form.markAllAsTouched();
       return;
     }
-    this.medicationPeriodsApi.create(this.form.getRawValue()).subscribe({
+
+    const editingId = this.editingMedicationPeriodId();
+    const operation = editingId
+      ? this.medicationPeriodsApi.update(editingId, this.form.getRawValue())
+      : this.medicationPeriodsApi.create(this.form.getRawValue());
+    operation.subscribe({
       next: (scheduled) => {
-        this.medicationPeriods.update((items) => [...items, scheduled]);
+        this.medicationPeriods.update((items) =>
+          editingId ? items.map((item) => item.id === editingId ? scheduled : item) : [...items, scheduled]);
+        this.cancelMedicationPeriodEdit();
       },
       error: (error: unknown) => void this.errorService.show(error),
+    });
+  }
+
+  editPeriod(id: string): void {
+    void this.router.navigate(['/periods', id, 'edit']);
+  }
+
+  editMedicationPeriod(item: MedicationPeriodResponse): void {
+    this.editingMedicationPeriodId.set(item.id);
+    this.form.patchValue(item);
+  }
+
+  cancelMedicationPeriodEdit(): void {
+    this.editingMedicationPeriodId.set(null);
+    this.form.reset({
+      userMedicationId: '',
+      periodId: '',
+      quantityValue: 1,
+      quantityUnitId: this.units().find((unit) => unit.type === 'MEDICATION')?.id ?? '',
+    });
+  }
+
+  removeMedicationPeriod(id: string, label: string): void {
+    this.actions.confirmDelete(label).subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.medicationPeriodsApi.delete(id).subscribe({
+        next: () => {
+          this.medicationPeriods.update((items) => items.filter((item) => item.id !== id));
+          this.actions.success('Schedule deleted');
+        },
+        error: (error: unknown) => this.actions.failure(error),
+      });
+    });
+  }
+
+  removePeriod(id: string, name: string): void {
+    this.actions.confirmDelete(name).subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.periodsApi.delete(id).subscribe({
+        next: () => {
+          this.periods.update((items) => items.filter((item) => item.id !== id));
+          this.actions.success('Period deleted');
+        },
+        error: (error: unknown) => this.actions.failure(error),
+      });
     });
   }
 

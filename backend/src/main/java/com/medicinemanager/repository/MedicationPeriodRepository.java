@@ -6,4 +6,6 @@ import java.util.*;
 
 public interface MedicationPeriodRepository extends JpaRepository<MedicationPeriod, UUID> {
     boolean existsByUserMedicationIdAndPeriodId(UUID userMedicationId, UUID periodId);
+
+    boolean existsByUserMedicationIdAndPeriodIdAndIdNot(UUID userMedicationId, UUID periodId, UUID id);
 }

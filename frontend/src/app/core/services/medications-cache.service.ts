@@ -25,4 +25,17 @@ export class MedicationsCacheService {
       tap((medication) => this.cachedMedications.update((medications) => [...medications, medication])),
     );
   }
+
+  update(id: string, request: MedicationRequest): Observable<MedicationResponse> {
+    return this.api.update(id, request).pipe(
+      tap((medication) =>
+        this.cachedMedications.update((items) => items.map((item) => item.id === id ? medication : item))),
+    );
+  }
+
+  delete(id: string): Observable<void> {
+    return this.api.delete(id).pipe(
+      tap(() => this.cachedMedications.update((items) => items.filter((item) => item.id !== id))),
+    );
+  }
 }

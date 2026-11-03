@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail integrity(DataIntegrityViolationException e) {
-        return detail(HttpStatus.CONFLICT, "Resource violates a uniqueness or integrity constraint");
+        return detail(HttpStatus.CONFLICT, "Cannot delete or update this resource because it is referenced by another record");
     }
 
     @ExceptionHandler({ BusinessRuleException.class, IllegalArgumentException.class })

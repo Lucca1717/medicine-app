@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -43,7 +44,7 @@ import { ErrorService } from '../../core/services/error.service';
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/units"></ion-back-button>
         </ion-buttons>
-        <ion-title>Add unit</ion-title>
+        <ion-title>{{ id ? 'Edit unit' : 'Add unit' }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
@@ -74,6 +75,8 @@ export class UnitFormPageComponent {
   private readonly cache = inject(UnitsCacheService);
   private readonly errorService = inject(ErrorService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  readonly id = this.route.snapshot.paramMap.get('id');
 
   readonly unitTypes: UnitType[] = ['MASS', 'VOLUME', 'MEDICATION'];
   readonly form = this.formBuilder.nonNullable.group({
@@ -87,11 +90,25 @@ export class UnitFormPageComponent {
       this.form.markAllAsTouched();
       return;
     }
-    this.cache.create(this.form.getRawValue()).subscribe({
+    const request = this.form.getRawValue();
+    const operation = this.id ? this.cache.update(this.id, request) : this.cache.create(request);
+    operation.subscribe({
       next: () => {
         void this.router.navigateByUrl('/units');
       },
       error: (error: unknown) => void this.errorService.show(error),
     });
+  }
+
+  constructor() {
+    if (this.id) {
+      this.cache.load().subscribe({
+        next: (units) => {
+          const unit = units.find((item) => item.id === this.id);
+          if (unit) this.form.patchValue(unit);
+        },
+        error: (error: unknown) => void this.errorService.show(error),
+      });
+    }
   }
 }

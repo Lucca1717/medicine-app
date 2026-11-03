@@ -1,13 +1,14 @@
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { IonChip, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonTitle, IonToolbar } from '@ionic/angular';
+import { Router, RouterLink } from '@angular/router';
+import { IonChip, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonTitle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline } from 'ionicons/icons';
 import { forkJoin } from 'rxjs';
 import { IntakeRecordResponse, MedicationPeriodResponse, MedicationResponse, PeriodResponse, UnitResponse } from '../core/models/medication-manager';
 import { CurrentUserService } from '../core/services/current-user.service';
 import { IntakeRecordsApiService, MedicationPeriodsApiService, MedicationsApiService, PeriodsApiService, UnitsApiService, UserMedicationsApiService } from '../core/services/resource-api.service';
+import { ResourceActionsService } from '../core/services/resource-actions.service';
 
 addIcons({ addOutline });
 
@@ -20,7 +21,7 @@ interface IntakeRow extends IntakeRecordResponse {
 @Component({
   selector: 'app-intake-records-page',
   standalone: true,
-  imports: [DatePipe, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonChip, IonFab, IonFabButton, IonIcon],
+  imports: [DatePipe, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonChip, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
   template: `
     <ion-header><ion-toolbar><ion-title>Intake</ion-title></ion-toolbar></ion-header>
     <ion-content>
@@ -29,6 +30,7 @@ interface IntakeRow extends IntakeRecordResponse {
       } @else {
         <ion-list>
           @for (record of records(); track record.id) {
+            <ion-item-sliding #sliding>
             <ion-item>
               <ion-label>
                 <h2>{{ record.medicationName }} · {{ record.periodName }}</h2>
@@ -41,6 +43,11 @@ interface IntakeRow extends IntakeRecordResponse {
               </ion-label>
               <ion-chip [class]="'status-' + record.status.toLowerCase()">{{ record.status }}</ion-chip>
             </ion-item>
+            <ion-item-options side="end">
+              <ion-item-option (click)="edit(record.id); sliding.close()">Edit</ion-item-option>
+              <ion-item-option color="danger" (click)="remove(record.id, record.medicationName); sliding.close()">Delete</ion-item-option>
+            </ion-item-options>
+            </ion-item-sliding>
           } @empty {
             <ion-item><ion-label>No intake records for this user.</ion-label></ion-item>
           }
@@ -69,6 +76,8 @@ export class IntakeRecordsPageComponent {
   private readonly unitsApi = inject(UnitsApiService);
   readonly currentUserId = this.currentUser.selectedUserId;
   readonly records = signal<IntakeRow[]>([]);
+  private readonly router = inject(Router);
+  private readonly actions = inject(ResourceActionsService);
 
   constructor() {
     effect(() => this.load(this.currentUserId()));
@@ -115,6 +124,23 @@ export class IntakeRecordsPageComponent {
             };
           }),
       );
+    });
+  }
+
+  edit(id: string): void {
+    void this.router.navigate(['/intake-records', id, 'edit']);
+  }
+
+  remove(id: string, label: string): void {
+    this.actions.confirmDelete(label).subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.intakesApi.delete(id).subscribe({
+        next: () => {
+          this.records.update((items) => items.filter((item) => item.id !== id));
+          this.actions.success('Intake record deleted');
+        },
+        error: (error: unknown) => this.actions.failure(error),
+      });
     });
   }
 }

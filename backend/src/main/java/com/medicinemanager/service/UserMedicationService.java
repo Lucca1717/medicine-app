@@ -50,6 +50,28 @@ public class UserMedicationService {
                 x.endDate(), x.active()));
     }
 
+    public UserMedication update(UUID id, UserMedicationRequest x) {
+        validate(x);
+        var item = find(id);
+        var user = user(x.userId());
+        var medication = med(x.medicationId());
+        var stockUnit = unit(x.stockUnitId());
+        if (r.existsByUserIdAndMedicationIdAndIdNot(x.userId(), x.medicationId(), id))
+            throw new ConflictException("User already has this medication registered");
+        item.setUser(user);
+        item.setMedication(medication);
+        item.setCurrentStockValue(x.currentStockValue());
+        item.setStockUnit(stockUnit);
+        item.setStartDate(x.startDate());
+        item.setEndDate(x.endDate());
+        item.setActive(x.active());
+        return r.save(item);
+    }
+
+    public void delete(UUID id) {
+        r.delete(find(id));
+    }
+
     private void validate(UserMedicationRequest x) {
         if (x.endDate() != null && x.endDate().isBefore(x.startDate()))
             throw new BusinessRuleException("endDate cannot be before startDate");

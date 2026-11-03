@@ -8,4 +8,8 @@ public interface UnitRepository extends JpaRepository<Unit, UUID> {
     boolean existsByNameIgnoreCase(String name);
 
     boolean existsByNameIgnoreCaseAndIdNot(String name, UUID id);
+
+    boolean existsByAbbreviationIgnoreCase(String abbreviation);
+
+    boolean existsByAbbreviationIgnoreCaseAndIdNot(String abbreviation, UUID id);
 }
