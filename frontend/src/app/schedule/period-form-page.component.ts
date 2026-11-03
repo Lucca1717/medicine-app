@@ -51,11 +51,11 @@ import { PeriodsApiService } from '../core/services/resource-api.service';
         <form [formGroup]="form" (ngSubmit)="submit()">
           <ion-item>
             <ion-label position="stacked">Name</ion-label>
-            <ion-input formControlName="name" autocomplete="off"></ion-input>
+            <ion-input formControlName="name" autocomplete="off" placeholder="e.g. Morning"></ion-input>
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Time</ion-label>
-            <ion-input formControlName="time" type="time"></ion-input>
+            <ion-input formControlName="time" type="time" placeholder="08:00"></ion-input>
           </ion-item>
           <ion-button expand="block" type="submit" [disabled]="form.invalid"
             >Save period</ion-button
