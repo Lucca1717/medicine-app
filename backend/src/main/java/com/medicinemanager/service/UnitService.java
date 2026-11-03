@@ -26,17 +26,25 @@ public class UnitService {
     }
 
     public Unit create(UnitRequest x) {
-        if (r.existsByNameIgnoreCase(x.name()))
+        var name = x.name().trim();
+        var abbreviation = x.abbreviation().trim();
+        if (r.existsByNameIgnoreCase(name))
             throw new ConflictException("Unit name already exists");
-        return r.save(new Unit(x.name().trim(), x.abbreviation().trim(), x.type()));
+        if (r.existsByAbbreviationIgnoreCase(abbreviation))
+            throw new ConflictException("Unit abbreviation already exists");
+        return r.save(new Unit(name, abbreviation, x.type()));
     }
 
     public Unit update(UUID id, UnitRequest x) {
         var u = find(id);
-        if (r.existsByNameIgnoreCaseAndIdNot(x.name(), id))
+        var name = x.name().trim();
+        var abbreviation = x.abbreviation().trim();
+        if (r.existsByNameIgnoreCaseAndIdNot(name, id))
             throw new ConflictException("Unit name already exists");
-        u.setName(x.name().trim());
-        u.setAbbreviation(x.abbreviation().trim());
+        if (r.existsByAbbreviationIgnoreCaseAndIdNot(abbreviation, id))
+            throw new ConflictException("Unit abbreviation already exists");
+        u.setName(name);
+        u.setAbbreviation(abbreviation);
         u.setType(x.type());
         return r.save(u);
     }

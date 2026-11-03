@@ -26,6 +26,18 @@ export class UnitsCacheService {
     );
   }
 
+  update(id: string, request: UnitRequest): Observable<UnitResponse> {
+    return this.api.update(id, request).pipe(
+      tap((unit) => this.cachedUnits.update((units) => units.map((item) => item.id === id ? unit : item))),
+    );
+  }
+
+  delete(id: string): Observable<void> {
+    return this.api.delete(id).pipe(
+      tap(() => this.cachedUnits.update((units) => units.filter((item) => item.id !== id))),
+    );
+  }
+
   refresh(): Observable<UnitResponse[]> {
     return this.load(true);
   }

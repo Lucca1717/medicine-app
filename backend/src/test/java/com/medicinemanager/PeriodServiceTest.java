@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalTime;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -73,5 +74,24 @@ class PeriodServiceTest {
 
         org.junit.jupiter.api.Assertions.assertEquals(secondUser, result.getUser());
         verify(repository).save(any(Period.class));
+    }
+
+    @Test
+    void updateExcludesCurrentPeriodFromUniquenessChecks() {
+        var id = UUID.randomUUID();
+        var user = mock(AppUser.class);
+        when(user.getId()).thenReturn(id);
+        when(users.findById(id)).thenReturn(java.util.Optional.of(user));
+        var period = new Period(user, "Morning", LocalTime.of(8, 0));
+        when(repository.findById(id)).thenReturn(java.util.Optional.of(period));
+        when(repository.existsByUserIdAndNameAndIdNot(id, "Morning", id)).thenReturn(false);
+        when(repository.existsByUserIdAndTimeAndIdNot(id, LocalTime.of(8, 0), id)).thenReturn(false);
+        when(repository.save(any(Period.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = service.update(id, new PeriodRequest(id, "Morning", LocalTime.of(8, 0)));
+
+        assertEquals("Morning", result.getName());
+        verify(repository).existsByUserIdAndNameAndIdNot(id, "Morning", id);
+        verify(repository).existsByUserIdAndTimeAndIdNot(id, LocalTime.of(8, 0), id);
     }
 }

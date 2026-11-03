@@ -10,5 +10,9 @@ public interface PeriodRepository extends JpaRepository<Period, UUID> {
 
     boolean existsByUserIdAndTime(UUID userId, LocalTime time);
 
+    boolean existsByUserIdAndNameAndIdNot(UUID userId, String name, UUID id);
+
+    boolean existsByUserIdAndTimeAndIdNot(UUID userId, LocalTime time, UUID id);
+
     List<Period> findByUserId(UUID userId);
 }

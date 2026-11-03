@@ -1,31 +1,39 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonTitle, IonToolbar,
+  IonItemOption, IonItemOptions, IonItemSliding,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline } from 'ionicons/icons';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MedicationsCacheService } from '../../core/services/medications-cache.service';
 import { UnitsCacheService } from '../../core/services/units-cache.service';
+import { ResourceActionsService } from '../../core/services/resource-actions.service';
 
 addIcons({ addOutline });
 
 @Component({
   selector: 'app-medications-page',
   standalone: true,
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon],
+  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
   template: `
     <ion-header><ion-toolbar><ion-title>Medications</ion-title></ion-toolbar></ion-header>
     <ion-content>
       <ion-list>
         @for (medication of medications(); track medication.id) {
+          <ion-item-sliding #sliding>
           <ion-item>
             <ion-label>
               <h2>{{ medication.name }}</h2>
               <p>{{ medication.dosageValue }} {{ unitAbbreviation(medication.dosageUnitId) }}</p>
             </ion-label>
           </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option (click)="edit(medication.id); sliding.close()">Edit</ion-item-option>
+            <ion-item-option color="danger" (click)="remove(medication.id, medication.name); sliding.close()">Delete</ion-item-option>
+          </ion-item-options>
+          </ion-item-sliding>
         } @empty {
           <ion-item><ion-label>No medications registered yet.</ion-label></ion-item>
         }
@@ -41,6 +49,8 @@ addIcons({ addOutline });
 export class MedicationsPageComponent {
   private readonly medicationCache = inject(MedicationsCacheService);
   private readonly unitsCache = inject(UnitsCacheService);
+  private readonly router = inject(Router);
+  private readonly actions = inject(ResourceActionsService);
   readonly medications = this.medicationCache.medications;
   readonly units = this.unitsCache.units;
 
@@ -51,5 +61,19 @@ export class MedicationsPageComponent {
 
   unitAbbreviation(id: string): string {
     return this.units().find((unit) => unit.id === id)?.abbreviation ?? '';
+  }
+
+  edit(id: string): void {
+    void this.router.navigate(['/medications', id, 'edit']);
+  }
+
+  remove(id: string, name: string): void {
+    this.actions.confirmDelete(name).subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.medicationCache.delete(id).subscribe({
+        next: () => this.actions.success('Medication deleted'),
+        error: (error: unknown) => this.actions.failure(error),
+      });
+    });
   }
 }

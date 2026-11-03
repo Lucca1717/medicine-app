@@ -1,5 +1,5 @@
 import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonBadge,
   IonContent,
@@ -12,6 +12,7 @@ import {
   IonList,
   IonTitle,
   IonToolbar,
+  IonItemOption, IonItemOptions, IonItemSliding,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline } from 'ionicons/icons';
@@ -25,13 +26,14 @@ import { CurrentUserService } from '../core/services/current-user.service';
 import { MedicationsApiService } from '../core/services/resource-api.service';
 import { UserMedicationsApiService } from '../core/services/user-medications-api.service';
 import { UnitsCacheService } from '../core/services/units-cache.service';
+import { ResourceActionsService } from '../core/services/resource-actions.service';
 
 addIcons({ addOutline });
 
 @Component({
   selector: 'app-my-medications-page',
   standalone: true,
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonBadge, IonFab, IonFabButton, IonIcon],
+  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonBadge, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
   template: `
     <ion-header><ion-toolbar><ion-title>My Medications</ion-title></ion-toolbar></ion-header>
     <ion-content>
@@ -40,6 +42,7 @@ addIcons({ addOutline });
       } @else {
         <ion-list>
           @for (item of items(); track item.id) {
+            <ion-item-sliding #sliding>
             <ion-item>
               <ion-label>
                 <h2>{{ medicationName(item.medicationId) }}</h2>
@@ -50,6 +53,11 @@ addIcons({ addOutline });
                 {{ item.active ? 'Active' : 'Inactive' }}
               </ion-badge>
             </ion-item>
+            <ion-item-options side="end">
+              <ion-item-option (click)="edit(item.id); sliding.close()">Edit</ion-item-option>
+              <ion-item-option color="danger" (click)="remove(item.id, medicationName(item.medicationId)); sliding.close()">Delete</ion-item-option>
+            </ion-item-options>
+            </ion-item-sliding>
           } @empty {
             <ion-item><ion-label>No medications registered yet.</ion-label></ion-item>
           }
@@ -69,6 +77,8 @@ export class MyMedicationsPageComponent {
   private readonly userMedicationsApi = inject(UserMedicationsApiService);
   private readonly medicationsApi = inject(MedicationsApiService);
   private readonly unitsCache = inject(UnitsCacheService);
+  private readonly router = inject(Router);
+  private readonly actions = inject(ResourceActionsService);
   readonly currentUserId = this.currentUser.selectedUserId;
   readonly items = signal<UserMedicationResponse[]>([]);
   readonly medications = signal<MedicationResponse[]>([]);
@@ -99,5 +109,22 @@ export class MyMedicationsPageComponent {
 
   unitAbbreviation(id: string): string {
     return this.units().find((unit: UnitResponse) => unit.id === id)?.abbreviation ?? '';
+  }
+
+  edit(id: string): void {
+    void this.router.navigate(['/my-medications', id, 'edit']);
+  }
+
+  remove(id: string, name: string): void {
+    this.actions.confirmDelete(name).subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.userMedicationsApi.delete(id).subscribe({
+        next: () => {
+          this.items.update((items) => items.filter((item) => item.id !== id));
+          this.actions.success('User medication deleted');
+        },
+        error: (error: unknown) => this.actions.failure(error),
+      });
+    });
   }
 }

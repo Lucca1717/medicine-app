@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonBackButton,
   IonButtons,
@@ -39,7 +39,7 @@ import { PeriodsApiService } from '../core/services/resource-api.service';
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/schedule"></ion-back-button>
         </ion-buttons>
-        <ion-title>Add period</ion-title>
+        <ion-title>{{ id ? 'Edit period' : 'Add period' }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
@@ -71,6 +71,8 @@ export class PeriodFormPageComponent {
   private readonly errorService = inject(ErrorService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  readonly id = this.route.snapshot.paramMap.get('id');
 
   readonly currentUserId = this.currentUserService.selectedUserId;
   readonly form = this.formBuilder.nonNullable.group({
@@ -85,9 +87,20 @@ export class PeriodFormPageComponent {
       return;
     }
 
-    this.api.create({ userId, ...this.form.getRawValue() }).subscribe({
+    const request = { userId, ...this.form.getRawValue() };
+    const operation = this.id ? this.api.update(this.id, request) : this.api.create(request);
+    operation.subscribe({
       next: () => void this.router.navigateByUrl('/schedule'),
       error: (error: unknown) => void this.errorService.show(error),
     });
+  }
+
+  constructor() {
+    if (this.id) {
+      this.api.get(this.id).subscribe({
+        next: (period) => this.form.patchValue({ name: period.name, time: period.time }),
+        error: (error: unknown) => void this.errorService.show(error),
+      });
+    }
   }
 }
