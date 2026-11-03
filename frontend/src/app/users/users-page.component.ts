@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonTitle, IonToolbar } from '@ionic/angular';
+import { IonButton, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonTitle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline } from 'ionicons/icons';
 import { UsersApiService } from '../core/services/users-api.service';
@@ -13,14 +13,18 @@ addIcons({ addOutline });
 @Component({
   selector: 'app-users-page',
   standalone: true,
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
+  imports: [RouterLink, IonButton, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
   template: `
     <ion-header><ion-toolbar><ion-title>Users</ion-title></ion-toolbar></ion-header>
     <ion-content>
       <ion-list>
         @for (user of users(); track user.id) {
           <ion-item-sliding #sliding>
-            <ion-item><ion-label><h2>{{ user.name }}</h2><p>{{ user.email }}</p></ion-label></ion-item>
+            <ion-item>
+              <ion-label><h2>{{ user.name }}</h2><p>{{ user.email }}</p></ion-label>
+              <ion-button fill="clear" slot="end" (click)="edit(user.id)" aria-label="Edit user">Edit</ion-button>
+              <ion-button fill="clear" color="danger" slot="end" (click)="remove(user.id, user.name)" aria-label="Delete user">Delete</ion-button>
+            </ion-item>
             <ion-item-options side="end">
               <ion-item-option (click)="edit(user.id); sliding.close()">Edit</ion-item-option>
               <ion-item-option color="danger" (click)="remove(user.id, user.name); sliding.close()">Delete</ion-item-option>

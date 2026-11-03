@@ -53,6 +53,8 @@ addIcons({ addOutline });
               <ion-badge slot="end" [color]="item.active ? 'success' : 'medium'">
                 {{ item.active ? 'Active' : 'Inactive' }}
               </ion-badge>
+              <ion-button fill="clear" slot="end" (click)="edit(item.id)" aria-label="Edit medication registration">Edit</ion-button>
+              <ion-button fill="clear" color="danger" slot="end" (click)="remove(item.id, medicationName(item.medicationId))" aria-label="Delete medication registration">Delete</ion-button>
             </ion-item>
             <ion-item-options side="end">
               <ion-item-option (click)="edit(item.id); sliding.close()">Edit</ion-item-option>

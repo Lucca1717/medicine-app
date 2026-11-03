@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   IonContent,
+  IonButton,
   IonFab,
   IonFabButton,
   IonHeader,
@@ -28,6 +29,7 @@ addIcons({ addOutline });
   standalone: true,
   imports: [
     RouterLink,
+    IonButton,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -57,6 +59,8 @@ addIcons({ addOutline });
               <h2>{{ unit.name }} ({{ unit.abbreviation }})</h2>
               <p>{{ unit.type }}</p>
             </ion-label>
+            <ion-button fill="clear" slot="end" (click)="edit(unit.id)" aria-label="Edit unit">Edit</ion-button>
+            <ion-button fill="clear" color="danger" slot="end" (click)="remove(unit.id, unit.name)" aria-label="Delete unit">Delete</ion-button>
           </ion-item>
           <ion-item-options side="end">
             <ion-item-option (click)="edit(unit.id); sliding.close()">Edit</ion-item-option>

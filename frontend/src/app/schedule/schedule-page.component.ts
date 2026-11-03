@@ -124,6 +124,8 @@ export function filterCurrentUserMedications(
             <ion-item-sliding #periodSliding>
             <ion-item lines="full">
               <ion-label><h2>{{ period.name }}</h2><p>{{ period.time }}</p></ion-label>
+              <ion-button fill="clear" slot="end" (click)="editPeriod(period.id)" aria-label="Edit period">Edit</ion-button>
+              <ion-button fill="clear" color="danger" slot="end" (click)="removePeriod(period.id, period.name)" aria-label="Delete period">Delete</ion-button>
             </ion-item>
             <ion-item-options side="end">
               <ion-item-option (click)="editPeriod(period.id); periodSliding.close()">Edit</ion-item-option>
@@ -137,6 +139,8 @@ export function filterCurrentUserMedications(
                   {{ medicationNameForScheduled(scheduled) }}
                   · {{ scheduled.quantityValue }} {{ unitAbbreviation(scheduled.quantityUnitId) }}
                 </ion-label>
+                <ion-button fill="clear" slot="end" (click)="editMedicationPeriod(scheduled)" aria-label="Edit scheduled medication">Edit</ion-button>
+                <ion-button fill="clear" color="danger" slot="end" (click)="removeMedicationPeriod(scheduled.id, medicationNameForScheduled(scheduled))" aria-label="Delete scheduled medication">Delete</ion-button>
               </ion-item>
               <ion-item-options side="end">
                 <ion-item-option (click)="editMedicationPeriod(scheduled); scheduledSliding.close()">Edit</ion-item-option>

@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { IonChip, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonTitle, IonToolbar } from '@ionic/angular';
+import { IonButton, IonChip, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonTitle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline } from 'ionicons/icons';
 import { forkJoin } from 'rxjs';
@@ -21,7 +21,7 @@ interface IntakeRow extends IntakeRecordResponse {
 @Component({
   selector: 'app-intake-records-page',
   standalone: true,
-  imports: [DatePipe, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonChip, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
+  imports: [DatePipe, RouterLink, IonButton, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonChip, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
   template: `
     <ion-header><ion-toolbar><ion-title>Intake</ion-title></ion-toolbar></ion-header>
     <ion-content>
@@ -42,6 +42,8 @@ interface IntakeRow extends IntakeRecordResponse {
                 }
               </ion-label>
               <ion-chip [class]="'status-' + record.status.toLowerCase()">{{ record.status }}</ion-chip>
+              <ion-button fill="clear" slot="end" (click)="edit(record.id)" aria-label="Edit intake record">Edit</ion-button>
+              <ion-button fill="clear" color="danger" slot="end" (click)="remove(record.id, record.medicationName)" aria-label="Delete intake record">Delete</ion-button>
             </ion-item>
             <ion-item-options side="end">
               <ion-item-option (click)="edit(record.id); sliding.close()">Edit</ion-item-option>
