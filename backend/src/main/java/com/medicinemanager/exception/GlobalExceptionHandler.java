@@ -5,11 +5,15 @@ import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(NotFoundException.class)
     ProblemDetail notFound(NotFoundException e) {
         return detail(HttpStatus.NOT_FOUND, e.getMessage());
@@ -22,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail integrity(DataIntegrityViolationException e) {
-        return detail(HttpStatus.CONFLICT, "Resource violates a uniqueness or integrity constraint");
+        return detail(HttpStatus.CONFLICT, "Cannot delete or update this resource because it is referenced by another record");
     }
 
     @ExceptionHandler({ BusinessRuleException.class, IllegalArgumentException.class })
@@ -43,6 +47,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ProblemDetail general(Exception e) {
+        log.error("Unhandled exception while processing request", e);
         return detail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
     }
 

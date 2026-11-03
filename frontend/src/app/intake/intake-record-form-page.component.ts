@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonHeader, IonInput, IonItem, IonLabel, IonNote, IonSelect, IonSelectOption, IonTitle, IonToolbar } from '@ionic/angular';
@@ -51,6 +52,8 @@ export class IntakeRecordFormPageComponent {
   private readonly medicationPeriodsApi = inject(MedicationPeriodsApiService);
   private readonly medicationsApi = inject(MedicationsApiService);
   private readonly unitsApi = inject(UnitsApiService);
+  private readonly route = inject(ActivatedRoute);
+  readonly id = this.route.snapshot.paramMap.get('id');
   readonly currentUserId = this.currentUser.selectedUserId();
   readonly statuses: IntakeStatus[] = ['PENDING', 'TAKEN', 'SKIPPED', 'OVERDUE'];
   readonly units: UnitResponse[] = [];
@@ -90,6 +93,15 @@ export class IntakeRecordFormPageComponent {
               return { medicationPeriod: item, medication: medicationById.get(userMedication.medicationId) as MedicationResponse, period: periodById.get(item.periodId) as PeriodResponse };
             }),
         );
+        if (this.id) {
+          this.api.get(this.id).subscribe({
+            next: (record) => {
+              this.form.patchValue(record);
+              applyStatusValidators(this.form);
+            },
+            error: (error: unknown) => void this.errorService.show(error),
+          });
+        }
       });
     }
   }
@@ -100,14 +112,16 @@ export class IntakeRecordFormPageComponent {
       return;
     }
     const value = this.form.getRawValue();
-    this.api.create({
+    const request = {
       medicationPeriodId: value.medicationPeriodId as string,
-      scheduledAt: value.scheduledAt,
-      takenAt: value.status === 'PENDING' ? null : value.takenAt,
+      scheduledAt: new Date(value.scheduledAt).toISOString(),
+      takenAt: value.status === 'PENDING' || !value.takenAt ? null : new Date(value.takenAt).toISOString(),
       quantityValue: value.status === 'PENDING' ? null : value.quantityValue,
       quantityUnitId: value.status === 'PENDING' ? null : value.quantityUnitId,
       status: value.status,
-    }).subscribe({
+    };
+    const operation = this.id ? this.api.update(this.id, request) : this.api.create(request);
+    operation.subscribe({
       next: () => void this.router.navigateByUrl('/intake-records'),
       error: (error: unknown) => void this.errorService.show(error),
     });

@@ -15,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import java.util.Optional;
+import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 class AppUserServiceTest {
@@ -44,5 +46,21 @@ class AppUserServiceTest {
         assertThrows(ConflictException.class,
                 () -> service.create(new AppUserRequest("Jane", "jane@example.com", "password")));
         verify(repository, never()).save(any(AppUser.class));
+    }
+
+    @Test
+    void updatesUserWithoutChangingPasswordWhenPasswordIsOmitted() {
+        var id = UUID.randomUUID();
+        var user = new AppUser("Jane", "jane@example.com", "existing-hash");
+        when(repository.findById(id)).thenReturn(Optional.of(user));
+        when(repository.existsByEmailIgnoreCaseAndIdNot("jane.new@example.com", id)).thenReturn(false);
+        when(repository.save(any(AppUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        service = new AppUserService(repository, new BCryptPasswordEncoder());
+
+        var result = service.update(id, new AppUserRequest("Jane New", "jane.new@example.com", null));
+
+        assertEquals("Jane New", result.getName());
+        assertEquals("existing-hash", result.getPasswordHash());
+        assertEquals("jane.new@example.com", result.getEmail());
     }
 }

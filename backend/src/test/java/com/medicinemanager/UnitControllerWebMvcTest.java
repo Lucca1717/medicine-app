@@ -16,8 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,5 +56,38 @@ class UnitControllerWebMvcTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Milligram"))
                 .andExpect(jsonPath("$.abbreviation").value("mg"));
+    }
+
+    @Test
+    void updatesUnit() throws Exception {
+        var id = UUID.randomUUID();
+        var unit = new Unit("Gram", "g", UnitType.MASS);
+        var response = new Responses.UnitResponse(id, "Gram", "g", UnitType.MASS);
+        when(service.update(any(), any())).thenReturn(unit);
+        when(mapper.unit(unit)).thenReturn(response);
+
+        mvc.perform(put("/api/units/" + id).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Gram\",\"abbreviation\":\"g\",\"type\":\"MASS\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Gram"));
+    }
+
+    @Test
+    void deletesUnit() throws Exception {
+        doNothing().when(service).delete(any());
+
+        mvc.perform(delete("/api/units/" + UUID.randomUUID()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void referencedUnitReturnsConflict() throws Exception {
+        doThrow(new org.springframework.dao.DataIntegrityViolationException("referenced"))
+                .when(service).delete(any());
+
+        mvc.perform(delete("/api/units/" + UUID.randomUUID()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value(
+                        "Cannot delete or update this resource because it is referenced by another record"));
     }
 }

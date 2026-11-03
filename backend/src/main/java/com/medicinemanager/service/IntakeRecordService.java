@@ -39,6 +39,26 @@ public class IntakeRecordService {
                 x.quantityUnitId() == null ? null : unit(x.quantityUnitId()), x.status()));
     }
 
+    public IntakeRecord update(UUID id, IntakeRecordRequest x) {
+        var record = find(id);
+        var medicationPeriod = mp(x.medicationPeriodId());
+        if (r.existsByMedicationPeriodIdAndScheduledAtAndIdNot(x.medicationPeriodId(), x.scheduledAt(), id)) {
+            throw new ConflictException("An intake record already exists for this medication period and scheduled time");
+        }
+        validate(x);
+        record.setMedicationPeriod(medicationPeriod);
+        record.setScheduledAt(x.scheduledAt());
+        record.setTakenAt(x.takenAt());
+        record.setQuantityValue(x.quantityValue());
+        record.setQuantityUnit(x.quantityUnitId() == null ? null : unit(x.quantityUnitId()));
+        record.setStatus(x.status());
+        return r.save(record);
+    }
+
+    public void delete(UUID id) {
+        r.delete(find(id));
+    }
+
     private void validate(IntakeRecordRequest x) {
         boolean hasActualData = x.takenAt() != null || x.quantityValue() != null || x.quantityUnitId() != null;
         if (x.status() == IntakeStatus.TAKEN && !(x.takenAt() != null && x.quantityValue() != null

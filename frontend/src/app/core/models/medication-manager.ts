@@ -10,7 +10,7 @@ export interface User {
 export interface UserRequest {
   name: string;
   email: string;
-  password: string;
+  password: string | null;
 }
 
 export interface UnitResponse {

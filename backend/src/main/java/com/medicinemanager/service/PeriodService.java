@@ -38,6 +38,24 @@ public class PeriodService {
         return r.save(new Period(user, name, x.time()));
     }
 
+    public Period update(UUID id, PeriodRequest x) {
+        var period = find(id);
+        var user = user(x.userId());
+        var name = x.name().trim();
+        if (r.existsByUserIdAndNameAndIdNot(user.getId(), name, id))
+            throw new ConflictException("Period name is already registered");
+        if (r.existsByUserIdAndTimeAndIdNot(user.getId(), x.time(), id))
+            throw new ConflictException("Period time is already registered");
+        period.setUser(user);
+        period.setName(name);
+        period.setTime(x.time());
+        return r.save(period);
+    }
+
+    public void delete(UUID id) {
+        r.delete(find(id));
+    }
+
     private AppUser user(UUID id) {
         if (id == null)
             throw new BusinessRuleException("User ID is required");

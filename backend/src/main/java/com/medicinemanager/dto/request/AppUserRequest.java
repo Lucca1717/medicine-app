@@ -7,5 +7,5 @@ import jakarta.validation.constraints.Size;
 public record AppUserRequest(
         @NotBlank String name,
         @NotBlank @Email String email,
-        @NotBlank @Size(min = 8) String password) {
+        @Size(min = 8) String password) {
 }

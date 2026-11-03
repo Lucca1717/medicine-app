@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -20,7 +21,7 @@ import { ErrorService } from '../../core/services/error.service';
   template: `
     <ion-header><ion-toolbar>
       <ion-buttons slot="start"><ion-back-button defaultHref="/medications"></ion-back-button></ion-buttons>
-      <ion-title>Add medication</ion-title>
+      <ion-title>{{ id ? 'Edit medication' : 'Add medication' }}</ion-title>
     </ion-toolbar></ion-header>
     <ion-content class="ion-padding">
       <form [formGroup]="form" (ngSubmit)="submit()">
@@ -45,6 +46,8 @@ export class MedicationFormPageComponent {
   private readonly unitsCache = inject(UnitsCacheService);
   private readonly medicationsCache = inject(MedicationsCacheService);
   private readonly errorService = inject(ErrorService);
+  private readonly route = inject(ActivatedRoute);
+  readonly id = this.route.snapshot.paramMap.get('id');
   readonly units = this.unitsCache.units;
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required]],
@@ -54,6 +57,12 @@ export class MedicationFormPageComponent {
 
   constructor() {
     this.unitsCache.load().pipe(takeUntilDestroyed()).subscribe();
+    if (this.id) {
+      this.medicationsCache.load().pipe(takeUntilDestroyed()).subscribe((items) => {
+        const medication = items.find((item) => item.id === this.id);
+        if (medication) this.form.patchValue(medication);
+      });
+    }
   }
 
   submit(): void {
@@ -61,9 +70,14 @@ export class MedicationFormPageComponent {
       this.form.markAllAsTouched();
       return;
     }
-    this.medicationsCache.create(this.form.getRawValue()).subscribe({
+    const request = this.form.getRawValue();
+    const operation = this.id
+      ? this.medicationsCache.update(this.id, request)
+      : this.medicationsCache.create(request);
+    operation.subscribe({
       next: () => void this.router.navigateByUrl('/medications'),
       error: (error: unknown) => void this.errorService.show(error),
     });
   }
+
 }

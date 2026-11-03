@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -19,7 +20,7 @@ import { endDateNotBeforeStartDate } from './date-range.validator';
   standalone: true,
   imports: [ReactiveFormsModule, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonTitle, IonToggle, IonToolbar],
   template: `
-    <ion-header><ion-toolbar><ion-buttons slot="start"><ion-back-button defaultHref="/my-medications"></ion-back-button></ion-buttons><ion-title>Add medication</ion-title></ion-toolbar></ion-header>
+    <ion-header><ion-toolbar><ion-buttons slot="start"><ion-back-button defaultHref="/my-medications"></ion-back-button></ion-buttons><ion-title>{{ id ? 'Edit medication' : 'Add medication' }}</ion-title></ion-toolbar></ion-header>
     <ion-content class="ion-padding">
       @if (!currentUserId()) {
         <p class="empty-state">Select a current user before adding a medication.</p>
@@ -52,6 +53,8 @@ export class UserMedicationFormPageComponent {
   private readonly unitsCache = inject(UnitsCacheService);
   private readonly errorService = inject(ErrorService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  readonly id = this.route.snapshot.paramMap.get('id');
   readonly currentUserId = this.currentUser.selectedUserId;
   readonly medications = signal<MedicationResponse[]>([]);
   readonly stockUnits = () => this.unitsCache.units().filter((unit) => unit.type === ('MEDICATION' satisfies UnitType));
@@ -66,7 +69,15 @@ export class UserMedicationFormPageComponent {
 
   constructor() {
     this.unitsCache.load().pipe(takeUntilDestroyed()).subscribe();
-    this.medicationsApi.list().pipe(takeUntilDestroyed()).subscribe((items) => this.medications.set(items));
+    this.medicationsApi.list().pipe(takeUntilDestroyed()).subscribe((items) => {
+      this.medications.set(items);
+      if (this.id) {
+        this.userMedicationsApi.get(this.id).pipe(takeUntilDestroyed()).subscribe({
+          next: (item) => this.form.patchValue({ ...item, endDate: item.endDate ?? '' }),
+          error: (error: unknown) => void this.errorService.show(error),
+        });
+      }
+    });
   }
 
   dosageUnit(medication: MedicationResponse): string {
@@ -79,7 +90,7 @@ export class UserMedicationFormPageComponent {
       return;
     }
     const value = this.form.getRawValue();
-    this.userMedicationsApi.create({
+    const request = {
       userId: this.currentUserId()!,
       medicationId: value.medicationId,
       currentStockValue: value.currentStockValue,
@@ -87,7 +98,9 @@ export class UserMedicationFormPageComponent {
       startDate: value.startDate,
       endDate: value.endDate || null,
       active: value.active,
-    }).subscribe({
+    };
+    const operation = this.id ? this.userMedicationsApi.update(this.id, request) : this.userMedicationsApi.create(request);
+    operation.subscribe({
       next: () => void this.router.navigateByUrl('/my-medications'),
       error: (error: unknown) => void this.errorService.show(error),
     });

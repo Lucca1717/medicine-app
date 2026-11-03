@@ -35,6 +35,18 @@ public class MedicationService {
         return r.save(new Medication(x.name().trim(), x.dosageValue(), u));
     }
 
+    public Medication update(UUID id, MedicationRequest x) {
+        var medication = find(id);
+        medication.setName(x.name().trim());
+        medication.setDosageValue(x.dosageValue());
+        medication.setDosageUnit(unit(x.dosageUnitId()));
+        return r.save(medication);
+    }
+
+    public void delete(UUID id) {
+        r.delete(find(id));
+    }
+
     private Unit unit(UUID id) {
         return units.findById(id).orElseThrow(() -> new NotFoundException("Unit not found"));
     }
