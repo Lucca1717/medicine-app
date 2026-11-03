@@ -3,6 +3,7 @@ package com.medicinemanager;
 import com.medicinemanager.dto.Requests.PeriodRequest;
 import com.medicinemanager.entity.AppUser;
 import com.medicinemanager.entity.Period;
+import com.medicinemanager.exception.BusinessRuleException;
 import com.medicinemanager.exception.ConflictException;
 import com.medicinemanager.repository.AppUserRepository;
 import com.medicinemanager.repository.PeriodRepository;
@@ -28,6 +29,14 @@ class PeriodServiceTest {
     AppUserRepository users;
     @InjectMocks
     PeriodService service;
+
+    @Test
+    void rejectsMissingUserId() {
+        assertThrows(BusinessRuleException.class,
+                () -> service.create(new PeriodRequest(null, "Morning", LocalTime.of(8, 0))));
+
+        verifyNoInteractions(users, repository);
+    }
 
     @Test
     void rejectsDuplicateNameForSameUser() {
