@@ -1,6 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import {
   IonButton,
@@ -37,6 +38,7 @@ import { addIcons } from 'ionicons';
 import { addOutline } from 'ionicons/icons';
 
 addIcons({ addOutline });
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export function filterCurrentUserPeriods(periods: PeriodResponse[], userId: string | null): PeriodResponse[] {
   return periods.filter((period) => period.userId === userId);
@@ -67,6 +69,7 @@ export function filterCurrentUserMedications(
     IonSelectOption,
     IonButton,
     IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption,
+    RouterLink,
   ],
   template: `
     <ion-toolbar>
@@ -76,6 +79,7 @@ export function filterCurrentUserMedications(
       @if (!currentUserId()) {
         <ion-note>Select a current user to view and create schedules.</ion-note>
       } @else {
+        <ion-button expand="block" routerLink="/periods/new">Add period</ion-button>
         <form [formGroup]="form" (ngSubmit)="submit()">
           <ion-item>
             <ion-label position="stacked">Medication</ion-label>
@@ -165,6 +169,7 @@ export class SchedulePageComponent {
   private readonly userMedicationsApi = inject(UserMedicationsApiService);
   private readonly medicationsApi = inject(MedicationsApiService);
   private readonly unitsApi = inject(UnitsApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly currentUserId = this.currentUser.selectedUserId;
   readonly periods = signal<PeriodResponse[]>([]);
@@ -186,26 +191,38 @@ export class SchedulePageComponent {
   });
 
   constructor() {
-    forkJoin({
-      periods: this.periodsApi.list(),
-      userMedications: this.userMedicationsApi.list(),
-      medications: this.medicationsApi.list(),
-      units: this.unitsApi.list(),
-      medicationPeriods: this.medicationPeriodsApi.list(),
-    }).subscribe({
-      next: (data) => {
-        this.periods.set(data.periods);
-        this.userMedications.set(data.userMedications);
-        this.medications.set(data.medications);
-        this.units.set(data.units);
-        this.medicationPeriods.set(data.medicationPeriods);
-        if (!this.form.controls.quantityUnitId.value && data.units.find((unit) => unit.type === 'MEDICATION')) {
-          this.form.controls.quantityUnitId.setValue(
-            data.units.find((unit) => unit.type === 'MEDICATION')!.id,
-          );
-        }
-      },
-      error: (error: unknown) => void this.errorService.show(error),
+    effect(() => {
+      const userId = this.currentUserId();
+      if (!userId) {
+        this.periods.set([]);
+        this.userMedications.set([]);
+        this.medicationPeriods.set([]);
+        return;
+      }
+
+      forkJoin({
+        periods: this.periodsApi.list({ userId }),
+        userMedications: this.userMedicationsApi.list({ userId }),
+        medications: this.medicationsApi.list(),
+        units: this.unitsApi.list(),
+        medicationPeriods: this.medicationPeriodsApi.list(),
+      })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (data) => {
+            this.periods.set(data.periods);
+            this.userMedications.set(data.userMedications);
+            this.medications.set(data.medications);
+            this.units.set(data.units);
+            this.medicationPeriods.set(data.medicationPeriods);
+            if (!this.form.controls.quantityUnitId.value && data.units.find((unit) => unit.type === 'MEDICATION')) {
+              this.form.controls.quantityUnitId.setValue(
+                data.units.find((unit) => unit.type === 'MEDICATION')!.id,
+              );
+            }
+          },
+          error: (error: unknown) => void this.errorService.show(error),
+        });
     });
   }
 

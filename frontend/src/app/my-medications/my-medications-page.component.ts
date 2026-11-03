@@ -10,6 +10,7 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  IonButton,
   IonTitle,
   IonToolbar,
   IonItemOption, IonItemOptions, IonItemSliding,
@@ -33,7 +34,7 @@ addIcons({ addOutline });
 @Component({
   selector: 'app-my-medications-page',
   standalone: true,
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonBadge, IonFab, IonFabButton, IonIcon, IonItemSliding, IonItemOptions, IonItemOption],
+  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonBadge, IonFab, IonFabButton, IonIcon, IonButton, IonItemSliding, IonItemOptions, IonItemOption],
   template: `
     <ion-header><ion-toolbar><ion-title>My Medications</ion-title></ion-toolbar></ion-header>
     <ion-content>
@@ -62,6 +63,9 @@ addIcons({ addOutline });
             <ion-item><ion-label>No medications registered yet.</ion-label></ion-item>
           }
         </ion-list>
+        <ion-button expand="block" routerLink="/my-medications/new">
+          Register medication
+        </ion-button>
         <ion-fab slot="fixed" vertical="bottom" horizontal="end">
           <ion-fab-button routerLink="/my-medications/new" aria-label="Add medication">
             <ion-icon name="add-outline"></ion-icon>

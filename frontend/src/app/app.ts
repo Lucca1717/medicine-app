@@ -1,8 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import {
   IonApp,
-  IonContent,
   IonHeader,
   IonIcon,
   IonItem,
@@ -28,12 +27,12 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
 @Component({
   selector: 'app-root',
   standalone: true,
+  styleUrl: './app.scss',
   imports: [
     IonApp,
     IonHeader,
     IonToolbar,
     IonTitle,
-    IonContent,
     IonSelect,
     IonSelectOption,
     IonItem,
@@ -65,9 +64,7 @@ addIcons({ calendarOutline, heartOutline, listOutline, timerOutline });
         </ion-toolbar>
       </ion-header>
 
-      <ion-content>
-        <ion-router-outlet></ion-router-outlet>
-      </ion-content>
+      <ion-router-outlet></ion-router-outlet>
 
       <ion-tab-bar slot="bottom">
         <ion-tab-button tab="my-medications" routerLink="/my-medications">
@@ -95,6 +92,7 @@ export class App {
   readonly currentUserId = this.currentUserService.selectedUserId;
   readonly users = signal<User[]>([]);
   protected router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(private readonly usersApi: UsersApiService) {
     this.loadUsers();
@@ -109,7 +107,7 @@ export class App {
   private loadUsers(): void {
     this.usersApi
       .list()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((items) => this.users.set(items));
   }
 
